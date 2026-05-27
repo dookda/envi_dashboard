@@ -1,0 +1,15 @@
+.git
+.gitignore
+postgres_data
+db/data
+node_modules
+web/node_modules
+web/.next
+web/out
+mock-service/node_modules
+.env
+.env.example
+README.md
+task.md
+implementation_plan.md
+walkthrough.md

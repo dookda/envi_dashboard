@@ -1,0 +1,33 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+model Station {
+  id        String    @id @default(uuid())
+  name      String
+  code      String    @unique
+  latitude  Float
+  longitude Float
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  readings  Reading[]
+}
+
+model Reading {
+  id        String   @id @default(uuid())
+  stationId String
+  station   Station  @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  pm25      Float
+  pm10      Float
+  tsp       Float
+  timestamp DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@index([timestamp])
+}
