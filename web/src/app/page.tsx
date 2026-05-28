@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { 
-  Activity, 
-  MapPin, 
-  Wind, 
-  BarChart3, 
-  RefreshCw, 
+import {
+  Activity,
+  MapPin,
+  Wind,
+  BarChart3,
+  RefreshCw,
   Database,
   CloudLightning,
   AlertCircle
@@ -53,11 +53,11 @@ export default function Home() {
   const fetchStations = useCallback(async (showIndicator = false) => {
     if (showIndicator) setIsRefreshing(true);
     try {
-      const response = await fetch('/api/stations');
+      const response = await fetch('/air/api/stations');
       if (!response.ok) throw new Error('Failed to fetch stations');
       const data: Station[] = await response.json();
       setStations(data);
-      
+
       // Default to first station if none is selected
       if (data.length > 0 && !activeStationId) {
         setActiveStationId(data[0].id);
@@ -74,7 +74,7 @@ export default function Home() {
 
   const fetchReadings = useCallback(async (stationId: string) => {
     try {
-      const response = await fetch(`/api/readings?stationId=${stationId}`);
+      const response = await fetch(`/air/api/readings?stationId=${stationId}`);
       if (!response.ok) throw new Error('Failed to fetch historical readings');
       const data: Reading[] = await response.json();
       setReadings(data);
@@ -94,7 +94,7 @@ export default function Home() {
   useEffect(() => {
     if (!activeStationId) return;
     fetchReadings(activeStationId);
-    
+
     const interval = setInterval(() => {
       fetchReadings(activeStationId);
     }, 5000);
@@ -159,9 +159,50 @@ export default function Home() {
         </div>
       )}
 
+      {/* Selected Station Summary & Charts */}
+      {activeStation && (
+        <section className="space-y-6">
+          {/* Summary Panel */}
+          <div className="bg-card text-card-foreground p-5 rounded-2xl border border-border shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-50 dark:bg-blue-950/30 text-blue-500 rounded-xl">
+                <BarChart3 className="h-5.5 w-5.5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg text-slate-800 dark:text-white">{activeStation.name} Telemetry</h3>
+                <p className="text-xs text-slate-400 font-medium">Latitude: {activeStation.latitude.toFixed(4)}, Longitude: {activeStation.longitude.toFixed(4)}</p>
+              </div>
+            </div>
+
+            {activeStation.latestReading && (
+              <div className="flex flex-wrap items-center gap-4 text-xs font-semibold">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                  <span className="text-slate-400">PM2.5:</span>
+                  <span className="text-slate-700 dark:text-slate-300">{activeStation.latestReading.pm25} µg/m³</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                  <span className="text-slate-400">PM10:</span>
+                  <span className="text-slate-700 dark:text-slate-300">{activeStation.latestReading.pm10} µg/m³</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                  <span className="text-slate-400">TSP:</span>
+                  <span className="text-slate-700 dark:text-slate-300">{activeStation.latestReading.tsp} µg/m³</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Historical Area Line Charts */}
+          <DashboardCharts readings={readings} stationName={activeStation.name} />
+        </section>
+      )}
+
       {/* Main Dashboard Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         {/* Left Column: Station list */}
         <div className="lg:col-span-1 flex flex-col space-y-4">
           <div className="bg-card text-card-foreground p-5 rounded-2xl border border-border shadow-sm flex flex-col flex-1 h-[450px]">
@@ -193,11 +234,10 @@ export default function Home() {
                     <button
                       key={station.id}
                       onClick={() => setActiveStationId(station.id)}
-                      className={`w-full text-left p-4 rounded-xl border transition-all duration-200 flex flex-col gap-2 relative overflow-hidden ${status.border} border-l-4 ${
-                        isActive 
-                          ? 'bg-slate-50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-700 shadow-sm' 
-                          : 'bg-transparent border-slate-200 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/20'
-                      }`}
+                      className={`w-full text-left p-4 rounded-xl border transition-all duration-200 flex flex-col gap-2 relative overflow-hidden ${status.border} border-l-4 ${isActive
+                        ? 'bg-slate-50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-700 shadow-sm'
+                        : 'bg-transparent border-slate-200 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/20'
+                        }`}
                     >
                       <div className="flex justify-between items-start">
                         <div>
@@ -240,54 +280,14 @@ export default function Home() {
 
         {/* Right Column: Live Map */}
         <div className="lg:col-span-2 h-[450px]">
-          <MapComponent 
-            stations={stations} 
-            activeStationId={activeStationId} 
-            onSelectStation={(id) => setActiveStationId(id)} 
+          <MapComponent
+            stations={stations}
+            activeStationId={activeStationId}
+            onSelectStation={(id) => setActiveStationId(id)}
           />
         </div>
       </div>
 
-      {/* Selected Station Summary & Charts */}
-      {activeStation && (
-        <section className="space-y-6">
-          {/* Summary Panel */}
-          <div className="bg-card text-card-foreground p-5 rounded-2xl border border-border shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-50 dark:bg-blue-950/30 text-blue-500 rounded-xl">
-                <BarChart3 className="h-5.5 w-5.5" />
-              </div>
-              <div>
-                <h3 className="font-bold text-lg text-slate-800 dark:text-white">{activeStation.name} Telemetry</h3>
-                <p className="text-xs text-slate-400 font-medium">Latitude: {activeStation.latitude.toFixed(4)}, Longitude: {activeStation.longitude.toFixed(4)}</p>
-              </div>
-            </div>
-
-            {activeStation.latestReading && (
-              <div className="flex flex-wrap items-center gap-4 text-xs font-semibold">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                  <span className="text-slate-400">PM2.5:</span>
-                  <span className="text-slate-700 dark:text-slate-300">{activeStation.latestReading.pm25} µg/m³</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                  <span className="text-slate-400">PM10:</span>
-                  <span className="text-slate-700 dark:text-slate-300">{activeStation.latestReading.pm10} µg/m³</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                  <span className="text-slate-400">TSP:</span>
-                  <span className="text-slate-700 dark:text-slate-300">{activeStation.latestReading.tsp} µg/m³</span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Historical Area Line Charts */}
-          <DashboardCharts readings={readings} stationName={activeStation.name} />
-        </section>
-      )}
     </div>
   );
 }
