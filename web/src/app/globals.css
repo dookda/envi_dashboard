@@ -2,12 +2,14 @@
 @import "leaflet/dist/leaflet.css";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #f8f9fa;
+  --foreground: #202124;
   --card: #ffffff;
-  --card-foreground: #0f172a;
-  --primary: #3b82f6;
-  --border: #e2e8f0;
+  --card-foreground: #202124;
+  --primary: #1a73e8;
+  --border: #e8eaed;
+  --muted: #f1f3f4;
+  --muted-foreground: #5f6368;
 }
 
 @theme inline {
@@ -17,23 +19,27 @@
   --color-card-foreground: var(--card-foreground);
   --color-primary: var(--primary);
   --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0f172a;
-    --foreground: #f8fafc;
-    --card: #1e293b;
-    --card-foreground: #f8fafc;
-    --primary: #3b82f6;
-    --border: #334155;
+    --background: #202124;
+    --foreground: #e8eaed;
+    --card: #2d2e30;
+    --card-foreground: #e8eaed;
+    --primary: #8ab4f8;
+    --border: #3c4043;
+    --muted: #303134;
+    --muted-foreground: #9aa0a6;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'Google Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
 }
 
@@ -41,13 +47,13 @@ body {
 .leaflet-container {
   width: 100%;
   height: 100%;
-  border-radius: 1rem;
+  border-radius: 1.5rem;
   z-index: 1;
 }
 
 .leaflet-bar {
   border: none !important;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1) !important;
 }
 
 .leaflet-bar a {
@@ -57,5 +63,5 @@ body {
 }
 
 .leaflet-bar a:hover {
-  background-color: var(--background) !important;
+  background-color: var(--muted) !important;
 }

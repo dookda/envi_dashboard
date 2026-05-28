@@ -105,91 +105,86 @@ export default function Home() {
   const activeStation = stations.find(s => s.id === activeStationId);
 
   const getPM25Status = (val: number | null | undefined) => {
-    if (val === null || val === undefined) return { label: 'Offline', color: 'text-slate-400 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700', border: 'border-l-slate-400' };
-    if (val <= 12) return { label: 'Good', color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/50', border: 'border-l-emerald-500' };
-    if (val <= 35.4) return { label: 'Moderate', color: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/50', border: 'border-l-amber-500' };
-    if (val <= 55.4) return { label: 'Sensitive', color: 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-900/50', border: 'border-l-orange-500' };
-    return { label: 'Unhealthy', color: 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/50', border: 'border-l-rose-500' };
+    if (val === null || val === undefined) return { label: 'Offline', color: 'text-[#5f6368] bg-[#f1f3f4]', border: 'border-l-[#5f6368]' };
+    if (val <= 12) return { label: 'Good', color: 'text-[#137333] bg-[#e6f4ea]', border: 'border-l-[#34a853]' };
+    if (val <= 35.4) return { label: 'Moderate', color: 'text-[#b45309] bg-[#fef3c7]', border: 'border-l-[#fbbc04]' };
+    if (val <= 55.4) return { label: 'Sensitive', color: 'text-[#b91c1c] bg-[#fce8e6]', border: 'border-l-[#ea8600]' };
+    return { label: 'Unhealthy', color: 'text-[#c5221f] bg-[#fce8e6]', border: 'border-l-[#ea4335]' };
   };
 
   return (
-    <div className="min-h-screen flex flex-col p-4 md:p-8 max-w-7xl mx-auto space-y-6">
-      {/* Top Navigation / Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card text-card-foreground p-5 rounded-2xl border border-border shadow-sm">
+    <div className="min-h-screen flex flex-col p-4 md:p-8 max-w-7xl mx-auto space-y-5">
+      {/* Header */}
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card px-6 py-4 rounded-3xl border border-border">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-blue-500 text-white rounded-xl shadow-md shadow-blue-500/10">
-            <Wind className="h-6 w-6" />
+          <div className="p-2 bg-[#1a73e8] text-white rounded-2xl">
+            <Wind className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight">EnviSense</h1>
-            <p className="text-xs text-slate-400 font-medium">Environmental Quality Control Terminal</p>
+            <h1 className="text-lg font-semibold text-[#202124] dark:text-[#e8eaed] tracking-tight">EnviSense</h1>
+            <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6]">Environmental Quality Control Terminal</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 mt-4 sm:mt-0">
-          {/* Connection Status Indicator */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold border border-border">
+        <div className="flex items-center gap-2 mt-3 sm:mt-0">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f1f3f4] dark:bg-[#303134] text-[#5f6368] dark:text-[#9aa0a6] text-xs font-medium">
             {error ? (
               <>
-                <AlertCircle className="h-3.5 w-3.5 text-rose-500" />
-                <span className="text-rose-500">Database Offline</span>
+                <AlertCircle className="h-3.5 w-3.5 text-[#ea4335]" />
+                <span className="text-[#ea4335]">Database Offline</span>
               </>
             ) : (
               <>
-                <Database className="h-3.5 w-3.5 text-emerald-500" />
+                <Database className="h-3.5 w-3.5 text-[#34a853]" />
                 <span>Live Feed Connected</span>
               </>
             )}
           </div>
-
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold border border-border">
-            <Activity className={`h-3.5 w-3.5 text-blue-500 ${isRefreshing ? 'animate-pulse' : ''}`} />
-            <span>Poll Active (10s)</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f1f3f4] dark:bg-[#303134] text-[#5f6368] dark:text-[#9aa0a6] text-xs font-medium">
+            <Activity className={`h-3.5 w-3.5 text-[#1a73e8] ${isRefreshing ? 'animate-pulse' : ''}`} />
+            <span>Poll Active (5s)</span>
           </div>
         </div>
       </header>
 
       {error && (
-        <div className="flex items-start gap-3 p-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 rounded-2xl">
-          <AlertCircle className="h-5 w-5 text-rose-500 mt-0.5" />
+        <div className="flex items-start gap-3 p-4 bg-[#fce8e6] rounded-3xl">
+          <AlertCircle className="h-5 w-5 text-[#ea4335] mt-0.5 shrink-0" />
           <div>
-            <h4 className="font-semibold text-rose-800 dark:text-rose-400 text-sm">System Error</h4>
-            <p className="text-xs text-rose-600 dark:text-rose-400/80 mt-0.5">{error}</p>
+            <h4 className="font-medium text-[#c5221f] text-sm">System Error</h4>
+            <p className="text-xs text-[#c5221f]/80 mt-0.5">{error}</p>
           </div>
         </div>
       )}
 
       {/* Selected Station Summary & Charts */}
       {activeStation && (
-        <section className="space-y-6">
+        <section className="space-y-5">
           {/* Summary Panel */}
-          <div className="bg-card text-card-foreground p-5 rounded-2xl border border-border shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-card px-6 py-4 rounded-3xl border border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-50 dark:bg-blue-950/30 text-blue-500 rounded-xl">
-                <BarChart3 className="h-5.5 w-5.5" />
+              <div className="p-2 bg-[#e8f0fe] text-[#1a73e8] rounded-2xl">
+                <BarChart3 className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="font-bold text-lg text-slate-800 dark:text-white">{activeStation.name} Telemetry</h3>
-                <p className="text-xs text-slate-400 font-medium">Latitude: {activeStation.latitude.toFixed(4)}, Longitude: {activeStation.longitude.toFixed(4)}</p>
+                <h3 className="font-semibold text-[#202124] dark:text-[#e8eaed]">{activeStation.name} Telemetry</h3>
+                <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6]">{activeStation.latitude.toFixed(4)}, {activeStation.longitude.toFixed(4)}</p>
               </div>
             </div>
 
             {activeStation.latestReading && (
-              <div className="flex flex-wrap items-center gap-4 text-xs font-semibold">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                  <span className="text-slate-400">PM2.5:</span>
-                  <span className="text-slate-700 dark:text-slate-300">{activeStation.latestReading.pm25} µg/m³</span>
+              <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#e8f0fe]">
+                  <span className="w-2 h-2 rounded-full bg-[#1a73e8]"></span>
+                  <span className="text-[#1a73e8]">PM2.5: {activeStation.latestReading.pm25} µg/m³</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                  <span className="text-slate-400">PM10:</span>
-                  <span className="text-slate-700 dark:text-slate-300">{activeStation.latestReading.pm10} µg/m³</span>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#e6f4ea]">
+                  <span className="w-2 h-2 rounded-full bg-[#34a853]"></span>
+                  <span className="text-[#137333]">PM10: {activeStation.latestReading.pm10} µg/m³</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                  <span className="text-slate-400">TSP:</span>
-                  <span className="text-slate-700 dark:text-slate-300">{activeStation.latestReading.tsp} µg/m³</span>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#fef3c7]">
+                  <span className="w-2 h-2 rounded-full bg-[#fbbc04]"></span>
+                  <span className="text-[#b45309]">TSP: {activeStation.latestReading.tsp} µg/m³</span>
                 </div>
               </div>
             )}
@@ -201,27 +196,27 @@ export default function Home() {
       )}
 
       {/* Main Dashboard Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
         {/* Left Column: Station list */}
         <div className="lg:col-span-1 flex flex-col space-y-4">
-          <div className="bg-card text-card-foreground p-5 rounded-2xl border border-border shadow-sm flex flex-col flex-1 h-[450px]">
+          <div className="bg-card px-5 py-5 rounded-3xl border border-border flex flex-col flex-1 h-[450px]">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <MapPin className="h-4.5 w-4.5 text-slate-400" />
-                <h3 className="font-bold text-md text-slate-700 dark:text-slate-300">Observation Stations</h3>
+                <MapPin className="h-4 w-4 text-[#1a73e8]" />
+                <h3 className="font-semibold text-sm text-[#202124] dark:text-[#e8eaed]">Observation Stations</h3>
               </div>
-              <span className="text-xs text-slate-400 font-semibold">{stations.length} Registered</span>
+              <span className="text-xs text-[#5f6368] bg-[#f1f3f4] dark:bg-[#303134] px-2 py-0.5 rounded-full">{stations.length} Registered</span>
             </div>
 
             {/* List scroll wrapper */}
-            <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+            <div className="flex-1 overflow-y-auto space-y-2 pr-1">
               {isLoading ? (
                 <div className="h-full flex items-center justify-center">
-                  <RefreshCw className="h-6 w-6 animate-spin text-slate-400" />
+                  <RefreshCw className="h-6 w-6 animate-spin text-[#1a73e8]" />
                 </div>
               ) : stations.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-sm text-slate-400">
+                <div className="h-full flex items-center justify-center text-sm text-[#5f6368]">
                   No stations registered.
                 </div>
               ) : (
@@ -234,40 +229,40 @@ export default function Home() {
                     <button
                       key={station.id}
                       onClick={() => setActiveStationId(station.id)}
-                      className={`w-full text-left p-4 rounded-xl border transition-all duration-200 flex flex-col gap-2 relative overflow-hidden ${status.border} border-l-4 ${isActive
-                        ? 'bg-slate-50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-700 shadow-sm'
-                        : 'bg-transparent border-slate-200 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/20'
+                      className={`w-full text-left p-3.5 rounded-2xl transition-all duration-150 flex flex-col gap-2 ${isActive
+                          ? 'bg-[#f1f3f4] dark:bg-[#303134]'
+                          : 'bg-transparent hover:bg-[#f8f9fa] dark:hover:bg-[#303134]/60'
                         }`}
                     >
                       <div className="flex justify-between items-start">
                         <div>
-                          <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-200 line-clamp-1">{station.name}</h4>
-                          <span className="text-xs text-slate-400 font-medium">Code: {station.code}</span>
+                          <h4 className="font-medium text-sm text-[#202124] dark:text-[#e8eaed] line-clamp-1">{station.name}</h4>
+                          <span className="text-xs text-[#5f6368]">{station.code}</span>
                         </div>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${status.color}`}>
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${status.color}`}>
                           {status.label}
                         </span>
                       </div>
 
                       {station.latestReading ? (
-                        <div className="grid grid-cols-3 gap-2 mt-1 text-center">
-                          <div className="bg-slate-100/50 dark:bg-slate-800/80 p-1.5 rounded-lg border border-border/40">
-                            <span className="block text-[9px] font-medium text-slate-400">PM2.5</span>
-                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{station.latestReading.pm25}</span>
+                        <div className="grid grid-cols-3 gap-1.5 mt-0.5 text-center">
+                          <div className="bg-[#e8f0fe] p-1.5 rounded-xl">
+                            <span className="block text-[9px] font-medium text-[#1a73e8]">PM2.5</span>
+                            <span className="text-xs font-semibold text-[#1a73e8]">{station.latestReading.pm25}</span>
                           </div>
-                          <div className="bg-slate-100/50 dark:bg-slate-800/80 p-1.5 rounded-lg border border-border/40">
-                            <span className="block text-[9px] font-medium text-slate-400">PM10</span>
-                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{station.latestReading.pm10}</span>
+                          <div className="bg-[#e6f4ea] p-1.5 rounded-xl">
+                            <span className="block text-[9px] font-medium text-[#137333]">PM10</span>
+                            <span className="text-xs font-semibold text-[#137333]">{station.latestReading.pm10}</span>
                           </div>
-                          <div className="bg-slate-100/50 dark:bg-slate-800/80 p-1.5 rounded-lg border border-border/40">
-                            <span className="block text-[9px] font-medium text-slate-400">TSP</span>
-                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{station.latestReading.tsp}</span>
+                          <div className="bg-[#fef3c7] p-1.5 rounded-xl">
+                            <span className="block text-[9px] font-medium text-[#b45309]">TSP</span>
+                            <span className="text-xs font-semibold text-[#b45309]">{station.latestReading.tsp}</span>
                           </div>
                         </div>
                       ) : (
-                        <div className="text-xs text-amber-500 italic mt-1 flex items-center gap-1">
+                        <div className="text-xs text-[#fbbc04] italic mt-0.5 flex items-center gap-1">
                           <RefreshCw className="h-3 w-3 animate-spin" />
-                          Waiting for live stream telemetry...
+                          Waiting for telemetry...
                         </div>
                       )}
                     </button>
