@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_AUTH_REDIRECT: process.env.NEXT_PUBLIC_AUTH_REDIRECT ?? `${base}/dashboard`,
     NEXT_PUBLIC_LOGIN_URL: `${base}/login`,
     NEXT_PUBLIC_BASE_PATH: base,
+    // Feature flags baked at build time from .env
+    NEXT_PUBLIC_LINE_NOTIFY_CONFIGURED: process.env.LINE_NOTIFY_TOKEN ? 'true' : 'false',
+    NEXT_PUBLIC_LINE_LOGIN_ENABLED: (process.env.LINE_CLIENT_ID && process.env.LINE_CLIENT_SECRET) ? 'true' : 'false',
   },
 };
 

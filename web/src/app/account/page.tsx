@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { ArrowLeft, User, Mail, Shield, Globe } from 'lucide-react';
+import { ArrowLeft, User, Mail, Shield, Globe, Bell, BellOff } from 'lucide-react';
 import SignOutButton from '@/components/SignOutButton';
 
 export default function AccountPage() {
@@ -134,6 +134,42 @@ export default function AccountPage() {
           <span className="px-2.5 py-1 rounded-full bg-[#e6f4ea] text-[#137333] text-[10px] font-semibold">
             Connected
           </span>
+        </div>
+      </div>
+
+      {/* LINE Notify alerts */}
+      <div className="bg-card rounded-3xl border border-border overflow-hidden">
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+          <h3 className="font-semibold text-sm text-[#202124] dark:text-[#e8eaed]">LINE Notify Alerts</h3>
+          {process.env.NEXT_PUBLIC_LINE_NOTIFY_CONFIGURED === 'true' ? (
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#e6f4ea] text-[#137333] text-[10px] font-semibold">
+              <Bell className="h-3 w-3" />
+              Active
+            </span>
+          ) : (
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#f1f3f4] text-[#5f6368] text-[10px] font-semibold">
+              <BellOff className="h-3 w-3" />
+              Not configured
+            </span>
+          )}
+        </div>
+        <div className="px-6 py-4 space-y-3">
+          <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6]">
+            When PM2.5 exceeds <span className="font-semibold text-[#ea4335]">55.4 µg/m³</span> (Unhealthy),
+            an alert is sent to the configured LINE Notify channel.
+            Alerts are throttled to once per station per <span className="font-semibold">30 minutes</span>.
+          </p>
+          {process.env.NEXT_PUBLIC_LINE_NOTIFY_CONFIGURED !== 'true' && (
+            <div className="bg-[#fef3c7] rounded-2xl px-4 py-3 text-xs text-[#b45309] space-y-1">
+              <p className="font-semibold">To enable alerts:</p>
+              <ol className="list-decimal list-inside space-y-0.5 text-[#b45309]/90">
+                <li>Go to <span className="font-mono">notify.line.me</span> and generate an access token</li>
+                <li>Add <span className="font-mono">LINE_NOTIFY_TOKEN=&lt;token&gt;</span> to your <span className="font-mono">.env</span></li>
+                <li>Set <span className="font-mono">NEXT_PUBLIC_LINE_NOTIFY_CONFIGURED=true</span> in <span className="font-mono">next.config.ts</span></li>
+                <li>Rebuild the container</li>
+              </ol>
+            </div>
+          )}
         </div>
       </div>
 

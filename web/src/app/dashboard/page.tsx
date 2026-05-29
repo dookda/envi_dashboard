@@ -49,6 +49,27 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const triggerAlert = useCallback(async (station: Station) => {
+    const r = station.latestReading;
+    if (!r) return;
+    try {
+      await fetch('/air/api/alert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          stationId: station.id,
+          stationName: station.name,
+          stationCode: station.code,
+          pm25: r.pm25,
+          pm10: r.pm10,
+          tsp: r.tsp,
+        }),
+      });
+    } catch {
+      // Alert is best-effort; don't break the dashboard if it fails
+    }
+  }, []);
+
   const fetchStations = useCallback(async () => {
     try {
       const response = await fetch('/air/api/stations');
@@ -61,13 +82,20 @@ export default function Home() {
         setActiveStationId(data[0].id);
       }
       setError(null);
+
+      // Fire LINE Notify for any station with critical PM2.5
+      data.forEach(station => {
+        if ((station.latestReading?.pm25 ?? 0) > 55.4) {
+          triggerAlert(station);
+        }
+      });
     } catch (err: any) {
       console.error(err);
       setError('Database connection error. Ensure Docker services are running.');
     } finally {
       setIsLoading(false);
     }
-  }, [activeStationId]);
+  }, [activeStationId, triggerAlert]);
 
   const fetchReadings = useCallback(async (stationId: string) => {
     try {
