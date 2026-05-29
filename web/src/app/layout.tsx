@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { SessionProvider } from "next-auth/react";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EnviSense - Real-time Environmental Dashboard",
+  title: "Envir Service - Real-time Environmental Dashboard",
   description: "Real-time PM2.5, PM10, and TSP environmental telemetry monitoring dashboard.",
 };
 
@@ -27,7 +28,9 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <SessionProvider basePath="/air/api/auth">{children}</SessionProvider>
+      </body>
     </html>
   );
 }

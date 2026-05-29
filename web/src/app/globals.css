@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "leaflet/dist/leaflet.css";
+@import "maplibre-gl/dist/maplibre-gl.css";
 
 :root {
   --background: #f8f9fa;
@@ -43,25 +43,30 @@ body {
   overflow-x: hidden;
 }
 
-/* Custom styles for Leaflet map to fit dashboard aesthetics */
-.leaflet-container {
+/* MapLibre map container */
+.maplibregl-map {
   width: 100%;
   height: 100%;
   border-radius: 1.5rem;
-  z-index: 1;
 }
 
-.leaflet-bar {
+.maplibregl-ctrl-group {
   border: none !important;
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.1) !important;
 }
 
-.leaflet-bar a {
+.maplibregl-ctrl-group button {
   background-color: var(--card) !important;
   color: var(--foreground) !important;
   border-bottom: 1px solid var(--border) !important;
 }
 
-.leaflet-bar a:hover {
+.maplibregl-ctrl-group button:hover {
   background-color: var(--muted) !important;
+}
+
+.maplibregl-popup-content {
+  border-radius: 0.75rem !important;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.12) !important;
+  padding: 10px 12px !important;
 }

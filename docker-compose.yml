@@ -36,8 +36,12 @@ services:
     restart: always
     ports:
       - "3000:3000"
+    env_file: .env
     environment:
+      # Override DATABASE_URL from .env — container uses Docker network, not localhost
       DATABASE_URL: postgresql://postgres:postgres@db:5432/envi_db
+      AUTH_TRUST_HOST: "true"
+      AUTH_URL: ${APP_HOST}${APP_BASE_PATH}/api/auth
     depends_on:
       db:
         condition: service_healthy
