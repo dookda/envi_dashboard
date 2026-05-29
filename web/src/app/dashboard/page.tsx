@@ -1,14 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useSession } from 'next-auth/react';
 import {
-  Activity,
   MapPin,
   BarChart3,
   RefreshCw,
-  Database,
   AlertCircle
 } from 'lucide-react';
 import DashboardCharts from '@/components/DashboardCharts';
@@ -48,11 +47,9 @@ export default function Home() {
   const [activeStationId, setActiveStationId] = useState<string | null>(null);
   const [readings, setReadings] = useState<Reading[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchStations = useCallback(async (showIndicator = false) => {
-    if (showIndicator) setIsRefreshing(true);
+  const fetchStations = useCallback(async () => {
     try {
       const response = await fetch('/air/api/stations');
       if (!response.ok) throw new Error('Failed to fetch stations');
@@ -69,7 +66,6 @@ export default function Home() {
       setError('Database connection error. Ensure Docker services are running.');
     } finally {
       setIsLoading(false);
-      setIsRefreshing(false);
     }
   }, [activeStationId]);
 
@@ -87,7 +83,7 @@ export default function Home() {
   // Poll stations every 5 seconds
   useEffect(() => {
     fetchStations();
-    const interval = setInterval(() => fetchStations(true), 5000);
+    const interval = setInterval(() => fetchStations(), 5000);
     return () => clearInterval(interval);
   }, [fetchStations]);
 
@@ -127,28 +123,20 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-2 mt-3 sm:mt-0 flex-wrap">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f1f3f4] dark:bg-[#303134] text-[#5f6368] dark:text-[#9aa0a6] text-xs font-medium">
-            {error ? (
-              <>
-                <AlertCircle className="h-3.5 w-3.5 text-[#ea4335]" />
-                <span className="text-[#ea4335]">Database Offline</span>
-              </>
-            ) : (
-              <>
-                <Database className="h-3.5 w-3.5 text-[#34a853]" />
-                <span>Live Feed Connected</span>
-              </>
-            )}
-          </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f1f3f4] dark:bg-[#303134] text-[#5f6368] dark:text-[#9aa0a6] text-xs font-medium">
-            <Activity className={`h-3.5 w-3.5 text-[#1a73e8] ${isRefreshing ? 'animate-pulse' : ''}`} />
-            <span>Poll Active (5s)</span>
-          </div>
+          {error && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f1f3f4] dark:bg-[#303134] text-xs font-medium">
+              <AlertCircle className="h-3.5 w-3.5 text-[#ea4335]" />
+              <span className="text-[#ea4335]">Database Offline</span>
+            </div>
+          )}
 
           {/* User avatar + sign out */}
           {session?.user && (
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-[#f1f3f4] dark:bg-[#303134]">
+              <Link
+                href="/account"
+                className="flex items-center gap-2 px-2 py-1 rounded-full bg-[#f1f3f4] dark:bg-[#303134] hover:bg-[#e8eaed] dark:hover:bg-[#3c4043] transition-colors"
+              >
                 {session.user.image ? (
                   <img
                     src={session.user.image}
@@ -163,7 +151,7 @@ export default function Home() {
                 <span className="text-xs font-medium text-[#202124] dark:text-[#e8eaed] hidden sm:block">
                   {session.user.name}
                 </span>
-              </div>
+              </Link>
               <SignOutButton />
             </div>
           )}
