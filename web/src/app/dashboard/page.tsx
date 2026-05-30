@@ -5,6 +5,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useLiff } from '@/lib/liffContext';
 import { readingStatus, isUnhealthy } from '@/lib/airQuality';
+import LiffGuard from '@/components/LiffGuard';
 import {
   MapPin,
   BarChart3,
@@ -12,7 +13,6 @@ import {
   AlertCircle,
   BellRing,
   CheckCircle2,
-  Loader2,
   Settings
 } from 'lucide-react';
 import DashboardCharts from '@/components/DashboardCharts';
@@ -152,19 +152,8 @@ export default function DashboardPage() {
     };
   };
 
-  // Show loading while LIFF initialises
-  if (!isReady) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-[#1a73e8]" />
-          <p className="text-sm text-[#5f6368]">Connecting to LINE…</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
+    <LiffGuard>
     <div className="min-h-screen flex flex-col p-4 md:p-8 max-w-7xl mx-auto space-y-5">
 
       {/* Header */}
@@ -361,5 +350,6 @@ export default function DashboardPage() {
       </div>
 
     </div>
+    </LiffGuard>
   );
 }

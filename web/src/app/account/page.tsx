@@ -3,11 +3,13 @@
 import Link from 'next/link';
 import { ArrowLeft, User, Bell, BellOff, ExternalLink } from 'lucide-react';
 import { useLiff } from '@/lib/liffContext';
+import LiffGuard from '@/components/LiffGuard';
 
 export default function AccountPage() {
   const { profile } = useLiff();
 
   return (
+    <LiffGuard>
     <div className="min-h-screen flex flex-col p-4 md:p-8 max-w-2xl mx-auto space-y-5">
 
       <header className="flex items-center justify-between bg-card px-6 py-4 rounded-3xl border border-border">
@@ -104,5 +106,6 @@ export default function AccountPage() {
       </div>
 
     </div>
+    </LiffGuard>
   );
 }

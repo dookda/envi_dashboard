@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Send, Users, BellRing, RefreshCw, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
 import { useLiff } from '@/lib/liffContext';
+import LiffGuard from '@/components/LiffGuard';
 
 interface Subscriber {
   id: string;
@@ -84,6 +85,7 @@ export default function AdminPage() {
   }
 
   return (
+    <LiffGuard>
     <div className="min-h-screen flex flex-col p-4 md:p-8 max-w-3xl mx-auto space-y-5">
 
       {/* Header */}
@@ -231,5 +233,6 @@ export default function AdminPage() {
       )}
 
     </div>
+    </LiffGuard>
   );
 }
