@@ -134,7 +134,7 @@ function buildMessages(payload: AlertPayload) {
                   contents: [
                     { type: 'text', text: '🧭 ทิศลม', size: 'xs', color: '#e65100', align: 'center' },
                     { type: 'text', text: payload.windDirection != null ? degToCompass(payload.windDirection) : '—', size: 'md', weight: 'bold', color: '#e65100', align: 'center' },
-                    { type: 'text', text: payload.windDirection != null ? `${payload.windDirection.toFixed(0)}°` : '', size: 'xxs', color: '#5f6368', align: 'center' },
+                    { type: 'text', text: payload.windDirection != null ? `${payload.windDirection.toFixed(0)}°` : '—', size: 'xxs', color: '#5f6368', align: 'center' },
                   ],
                 },
               ],
