@@ -69,8 +69,8 @@ export default function AccountPage() {
         </div>
         <div className="px-6 py-4 space-y-3">
           <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6]">
-            Alerts are sent via LINE multicast to subscribed members when PM2.5 exceeds{' '}
-            <span className="font-semibold text-[#ea4335]">55.4 µg/m³</span>.
+            Alerts are sent via LINE multicast to subscribed members when any pollutant reaches the red level
+            (PM2.5 &gt; 37.5 · PM10 &gt; 100 · TSP &gt; 200 µg/m³).
             Throttled to once per station per <span className="font-semibold">30 minutes</span>.
           </p>
           {process.env.NEXT_PUBLIC_LIFF_ID && (

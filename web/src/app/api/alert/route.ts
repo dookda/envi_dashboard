@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendLineMulticast, type AlertPayload } from '@/lib/lineNotify';
 import { canAlert, markAlerted, cooldownRemainingMs } from '@/lib/alertCooldown';
+import { isUnhealthy } from '@/lib/airQuality';
 import prisma from '@/lib/prisma';
-
-const CRITICAL_THRESHOLD = 55.4;
 
 export async function POST(request: NextRequest) {
   const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
@@ -23,8 +22,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
-  if (pm25 <= CRITICAL_THRESHOLD) {
-    return NextResponse.json({ skipped: true, reason: 'Below critical threshold' });
+  if (!isUnhealthy(pm25, pm10, tsp)) {
+    return NextResponse.json({ skipped: true, reason: 'All pollutants within safe range' });
   }
 
   if (!canAlert(stationId)) {

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
+import { compositeLevel, getStatus } from '@/lib/airQuality';
 
 interface Reading {
   id: string;
@@ -26,17 +27,19 @@ interface MapComponentProps {
   onSelectStation: (stationId: string) => void;
 }
 
-function getPM25Color(val: number | null | undefined): string {
-  if (val === null || val === undefined) return '#94a3b8';
-  if (val <= 12) return '#10b981';
-  if (val <= 35.4) return '#f59e0b';
-  if (val <= 55.4) return '#f97316';
-  return '#f43f5e';
+function markerColor(r: Reading | null): string {
+  if (!r) return '#9aa0a6';
+  return getStatus(compositeLevel(r.pm25, r.pm10, r.tsp)).color;
 }
 
-function createMarkerElement(pm25: number | null | undefined, isActive: boolean): HTMLElement {
-  const color = getPM25Color(pm25);
-  const label = pm25 !== null && pm25 !== undefined ? Math.round(pm25).toString() : '-';
+function markerLabel(r: Reading | null): string {
+  return r ? Math.round(r.pm25).toString() : '-';
+}
+
+function createMarkerElement(station: Station, isActive: boolean): HTMLElement {
+  const r = station.latestReading;
+  const color = markerColor(r);
+  const label = markerLabel(r);
   const ring = isActive ? 'box-shadow:0 0 0 4px rgba(59,130,246,0.4);transform:scale(1.1);' : '';
 
   const wrapper = document.createElement('div');
@@ -54,22 +57,34 @@ function createMarkerElement(pm25: number | null | undefined, isActive: boolean)
   return wrapper;
 }
 
+function pollutantCell(label: string, value: number, color: string): string {
+  return `<div style="padding:4px;background:${color}22;border-radius:4px;text-align:center;">
+    <div style="color:#9aa0a6;font-size:10px;font-weight:500;">${label}</div>
+    <div style="font-weight:700;color:${color};font-size:12px;">${value}</div>
+  </div>`;
+}
+
 function createPopupHTML(station: Station): string {
   const r = station.latestReading;
-  const cell = (label: string, val: number) =>
-    `<div style="padding:4px;background:#f1f3f4;border-radius:4px;text-align:center;">
-      <div style="color:#9aa0a6;font-size:10px;font-weight:500;">${label}</div>
-      <div style="font-weight:700;color:#202124;font-size:12px;">${val}</div>
+  if (!r) {
+    return `<div style="font-family:system-ui,sans-serif;padding:2px;">
+      <h4 style="font-weight:600;font-size:13px;margin:0 0 2px;color:#202124;">${station.name}</h4>
+      <p style="font-size:11px;color:#5f6368;margin:0;">${station.code}</p>
+      <p style="font-size:11px;color:#f59e0b;margin:6px 0 0;">No recent data available</p>
     </div>`;
-
-  const body = r
-    ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px;">${cell('PM2.5', r.pm25)}${cell('PM10', r.pm10)}${cell('TSP', r.tsp)}</div>`
-    : `<p style="font-size:11px;color:#f59e0b;margin:4px 0 0;">No recent data available</p>`;
+  }
+  const { color: pm25c } = getStatus(compositeLevel(r.pm25, null, null));
+  const { color: pm10c } = getStatus(compositeLevel(null, r.pm10, null));
+  const { color: tspc  } = getStatus(compositeLevel(null, null, r.tsp));
 
   return `<div style="font-family:system-ui,sans-serif;padding:2px;">
     <h4 style="font-weight:600;font-size:13px;margin:0 0 2px;color:#202124;">${station.name}</h4>
     <p style="font-size:11px;color:#5f6368;margin:0;">${station.code}</p>
-    ${body}
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px;">
+      ${pollutantCell('PM2.5', r.pm25, pm25c)}
+      ${pollutantCell('PM10',  r.pm10, pm10c)}
+      ${pollutantCell('TSP',   r.tsp,  tspc)}
+    </div>
   </div>`;
 }
 
@@ -113,23 +128,18 @@ export default function MapComponent({ stations, activeStationId, onSelectStatio
       document.head.appendChild(style);
     }
 
-    return () => {
-      map.remove();
-      mapRef.current = null;
-    };
+    return () => { map.remove(); mapRef.current = null; };
   }, []);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-
     Object.values(markersRef.current).forEach(m => m.remove());
     markersRef.current = {};
 
     stations.forEach(station => {
-      const pm25 = station.latestReading?.pm25;
       const isActive = station.id === activeStationId;
-      const el = createMarkerElement(pm25, isActive);
+      const el = createMarkerElement(station, isActive);
       el.addEventListener('click', () => onSelectStation(station.id));
 
       const popup = new maplibregl.Popup({ offset: 20, closeButton: false, maxWidth: '220px' })
@@ -148,9 +158,7 @@ export default function MapComponent({ stations, activeStationId, onSelectStatio
     const map = mapRef.current;
     if (!map || !activeStationId) return;
     const station = stations.find(s => s.id === activeStationId);
-    if (station) {
-      map.easeTo({ center: [station.longitude, station.latitude] });
-    }
+    if (station) map.easeTo({ center: [station.longitude, station.latitude] });
   }, [activeStationId, stations]);
 
   return <div ref={containerRef} className="w-full h-full" />;

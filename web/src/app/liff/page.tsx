@@ -132,8 +132,8 @@ export default function LiffPage() {
             <div className="px-6 py-4 space-y-4">
               <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6]">
                 {status === 'subscribed'
-                  ? 'You will receive a LINE message when PM2.5 exceeds 55.4 µg/m³ at any monitored station. Alerts are sent at most once per station every 30 minutes.'
-                  : 'Subscribe to receive LINE alerts when air quality reaches an unhealthy level (PM2.5 > 55.4 µg/m³).'}
+                  ? 'You will receive a LINE message when any pollutant reaches the red level (PM2.5 > 37.5 · PM10 > 100 · TSP > 200 µg/m³). Alerts are sent at most once per station every 30 minutes.'
+                  : 'Subscribe to receive LINE alerts when any pollutant reaches the red level (PM2.5 > 37.5 · PM10 > 100 · TSP > 200 µg/m³).'}
               </p>
 
               {status === 'unsubscribed' ? (

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useLiff } from '@/lib/liffContext';
+import { readingStatus, isUnhealthy } from '@/lib/airQuality';
 import {
   MapPin,
   BarChart3,
@@ -107,7 +108,8 @@ export default function DashboardPage() {
       if (data.length > 0 && !activeStationId) setActiveStationId(data[0].id);
       setError(null);
       data.forEach(station => {
-        if ((station.latestReading?.pm25 ?? 0) > 55.4) triggerAlert(station);
+        const r = station.latestReading;
+        if (r && isUnhealthy(r.pm25, r.pm10, r.tsp)) triggerAlert(station);
       });
     } catch (err: unknown) {
       console.error(err);
@@ -142,12 +144,12 @@ export default function DashboardPage() {
 
   const activeStation = stations.find(s => s.id === activeStationId);
 
-  const getPM25Status = (val: number | null | undefined) => {
-    if (val === null || val === undefined) return { label: 'Offline', color: 'text-[#5f6368] bg-[#f1f3f4]' };
-    if (val <= 12)   return { label: 'Good',      color: 'text-[#137333] bg-[#e6f4ea]' };
-    if (val <= 35.4) return { label: 'Moderate',  color: 'text-[#b45309] bg-[#fef3c7]' };
-    if (val <= 55.4) return { label: 'Sensitive', color: 'text-[#b91c1c] bg-[#fce8e6]' };
-    return             { label: 'Unhealthy', color: 'text-[#c5221f] bg-[#fce8e6]' };
+  const getStationStatus = (r: Station['latestReading']) => {
+    const s = readingStatus(r?.pm25, r?.pm10, r?.tsp);
+    return {
+      label: s.label,
+      color: `text-[${s.textColor}] bg-[${s.bgColor}]`,
+    };
   };
 
   // Show loading while LIFF initialises
@@ -295,8 +297,7 @@ export default function DashboardPage() {
                 <div className="h-full flex items-center justify-center text-sm text-[#5f6368]">No stations registered.</div>
               ) : (
                 stations.map(station => {
-                  const pm25 = station.latestReading?.pm25;
-                  const status = getPM25Status(pm25);
+                  const status = getStationStatus(station.latestReading);
                   const isActive = station.id === activeStationId;
 
                   return (

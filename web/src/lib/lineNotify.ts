@@ -1,3 +1,5 @@
+import { pm25Level, pm10Level, tspLevel, compositeLevel, getStatus } from './airQuality';
+
 const LINE_MULTICAST_API = 'https://api.line.me/v2/bot/message/multicast';
 
 export interface AlertPayload {
@@ -9,21 +11,31 @@ export interface AlertPayload {
   tsp: number;
 }
 
-function level(pm25: number): { label: string; color: string; emoji: string } {
-  if (pm25 <= 12)   return { label: 'Good',      color: '#34a853', emoji: '🟢' };
-  if (pm25 <= 35.4) return { label: 'Moderate',  color: '#fbbc04', emoji: '🟡' };
-  if (pm25 <= 55.4) return { label: 'Sensitive', color: '#ea8600', emoji: '🟠' };
-  return               { label: 'Unhealthy', color: '#ea4335', emoji: '🔴' };
+function levelEmoji(level: string): string {
+  if (level === 'good')      return '🟢';
+  if (level === 'moderate')  return '🟡';
+  return '🔴';
 }
 
 function buildMessages(payload: AlertPayload) {
-  const { label, color, emoji } = level(payload.pm25);
+  const overall = compositeLevel(payload.pm25, payload.pm10, payload.tsp);
+  const { label, color } = getStatus(overall);
   const now = new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
+
+  const pm25l = pm25Level(payload.pm25);
+  const pm10l = pm10Level(payload.pm10);
+  const tspl  = tspLevel(payload.tsp);
+
+  const pm25Status = getStatus(pm25l);
+  const pm10Status = getStatus(pm10l);
+  const tspStatus  = getStatus(tspl);
+
+  const overallEmoji = levelEmoji(overall);
 
   return [
     {
       type: 'flex',
-      altText: `${emoji} Air Quality Alert — ${label} | PM2.5: ${payload.pm25.toFixed(1)} µg/m³`,
+      altText: `${overallEmoji} Air Quality Alert — ${label} | PM2.5: ${payload.pm25.toFixed(1)} µg/m³`,
       contents: {
         type: 'bubble',
         styles: { header: { backgroundColor: color } },
@@ -31,7 +43,7 @@ function buildMessages(payload: AlertPayload) {
           type: 'box',
           layout: 'vertical',
           contents: [
-            { type: 'text', text: `${emoji} Air Quality Alert`, color: '#ffffff', size: 'lg', weight: 'bold' },
+            { type: 'text', text: `${overallEmoji} Air Quality Alert`, color: '#ffffff', size: 'lg', weight: 'bold' },
             { type: 'text', text: label, color: '#ffffff', size: 'sm' },
           ],
         },
@@ -60,28 +72,28 @@ function buildMessages(payload: AlertPayload) {
               contents: [
                 {
                   type: 'box', layout: 'vertical', flex: 1,
-                  backgroundColor: '#e8f0fe', cornerRadius: 'md', paddingAll: 'sm',
+                  backgroundColor: pm25Status.bgColor, cornerRadius: 'md', paddingAll: 'sm',
                   contents: [
-                    { type: 'text', text: 'PM2.5', size: 'xs', color: '#1a73e8', align: 'center' },
-                    { type: 'text', text: payload.pm25.toFixed(1), size: 'md', weight: 'bold', color: '#1a73e8', align: 'center' },
+                    { type: 'text', text: `${levelEmoji(pm25l)} PM2.5`, size: 'xs', color: pm25Status.textColor, align: 'center' },
+                    { type: 'text', text: payload.pm25.toFixed(1), size: 'md', weight: 'bold', color: pm25Status.textColor, align: 'center' },
                     { type: 'text', text: 'µg/m³', size: 'xxs', color: '#5f6368', align: 'center' },
                   ],
                 },
                 {
                   type: 'box', layout: 'vertical', flex: 1,
-                  backgroundColor: '#e6f4ea', cornerRadius: 'md', paddingAll: 'sm',
+                  backgroundColor: pm10Status.bgColor, cornerRadius: 'md', paddingAll: 'sm',
                   contents: [
-                    { type: 'text', text: 'PM10', size: 'xs', color: '#137333', align: 'center' },
-                    { type: 'text', text: payload.pm10.toFixed(1), size: 'md', weight: 'bold', color: '#137333', align: 'center' },
+                    { type: 'text', text: `${levelEmoji(pm10l)} PM10`, size: 'xs', color: pm10Status.textColor, align: 'center' },
+                    { type: 'text', text: payload.pm10.toFixed(1), size: 'md', weight: 'bold', color: pm10Status.textColor, align: 'center' },
                     { type: 'text', text: 'µg/m³', size: 'xxs', color: '#5f6368', align: 'center' },
                   ],
                 },
                 {
                   type: 'box', layout: 'vertical', flex: 1,
-                  backgroundColor: '#fef3c7', cornerRadius: 'md', paddingAll: 'sm',
+                  backgroundColor: tspStatus.bgColor, cornerRadius: 'md', paddingAll: 'sm',
                   contents: [
-                    { type: 'text', text: 'TSP', size: 'xs', color: '#b45309', align: 'center' },
-                    { type: 'text', text: payload.tsp.toFixed(1), size: 'md', weight: 'bold', color: '#b45309', align: 'center' },
+                    { type: 'text', text: `${levelEmoji(tspl)} TSP`, size: 'xs', color: tspStatus.textColor, align: 'center' },
+                    { type: 'text', text: payload.tsp.toFixed(1), size: 'md', weight: 'bold', color: tspStatus.textColor, align: 'center' },
                     { type: 'text', text: 'µg/m³', size: 'xxs', color: '#5f6368', align: 'center' },
                   ],
                 },
@@ -89,7 +101,7 @@ function buildMessages(payload: AlertPayload) {
             },
             {
               type: 'text',
-              text: '⚠️ PM2.5 exceeds the safe threshold (55.4 µg/m³). Please take precautionary measures.',
+              text: `⚠️ One or more pollutants have reached an unhealthy level. Please take precautionary measures.`,
               size: 'xs', color: '#c5221f', wrap: true,
             },
           ],
@@ -99,15 +111,12 @@ function buildMessages(payload: AlertPayload) {
   ];
 }
 
-// Send to a list of LINE userIds (max 500 per call)
 export async function sendLineMulticast(
   channelAccessToken: string,
   userIds: string[],
   payload: AlertPayload,
 ): Promise<void> {
   if (userIds.length === 0) return;
-
-  // Batch into chunks of 500
   for (let i = 0; i < userIds.length; i += 500) {
     const chunk = userIds.slice(i, i + 500);
     const res = await fetch(LINE_MULTICAST_API, {
