@@ -3,17 +3,18 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { useSession } from 'next-auth/react';
+import { useLiff } from '@/lib/liffContext';
 import {
   MapPin,
   BarChart3,
   RefreshCw,
   AlertCircle,
   BellRing,
-  CheckCircle2
+  CheckCircle2,
+  Loader2,
+  Settings
 } from 'lucide-react';
 import DashboardCharts from '@/components/DashboardCharts';
-import SignOutButton from '@/components/SignOutButton';
 
 interface Reading {
   id: string;
@@ -32,7 +33,6 @@ interface Station {
   latestReading: Reading | null;
 }
 
-// Dynamically import map component to avoid SSR window errors
 const MapComponent = dynamic(() => import('@/components/MapComponent'), {
   ssr: false,
   loading: () => (
@@ -43,8 +43,9 @@ const MapComponent = dynamic(() => import('@/components/MapComponent'), {
   ),
 });
 
-export default function Home() {
-  const { data: session } = useSession();
+export default function DashboardPage() {
+  const { profile, isReady, error: liffError } = useLiff();
+
   const [stations, setStations] = useState<Station[]>([]);
   const [activeStationId, setActiveStationId] = useState<string | null>(null);
   const [readings, setReadings] = useState<Reading[]>([]);
@@ -69,7 +70,7 @@ export default function Home() {
         }),
       });
     } catch {
-      // Alert is best-effort; don't break the dashboard if it fails
+      // best-effort
     }
   }, []);
 
@@ -103,20 +104,12 @@ export default function Home() {
       if (!response.ok) throw new Error('Failed to fetch stations');
       const data: Station[] = await response.json();
       setStations(data);
-
-      // Default to first station if none is selected
-      if (data.length > 0 && !activeStationId) {
-        setActiveStationId(data[0].id);
-      }
+      if (data.length > 0 && !activeStationId) setActiveStationId(data[0].id);
       setError(null);
-
-      // Fire LINE Notify for any station with critical PM2.5
       data.forEach(station => {
-        if ((station.latestReading?.pm25 ?? 0) > 55.4) {
-          triggerAlert(station);
-        }
+        if ((station.latestReading?.pm25 ?? 0) > 55.4) triggerAlert(station);
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError('Database connection error. Ensure Docker services are running.');
     } finally {
@@ -128,44 +121,50 @@ export default function Home() {
     try {
       const response = await fetch(`/air/api/readings?stationId=${stationId}`);
       if (!response.ok) throw new Error('Failed to fetch historical readings');
-      const data: Reading[] = await response.json();
-      setReadings(data);
+      setReadings(await response.json());
     } catch (err) {
       console.error(err);
     }
   }, []);
 
-  // Poll stations every 5 seconds
   useEffect(() => {
     fetchStations();
-    const interval = setInterval(() => fetchStations(), 5000);
+    const interval = setInterval(fetchStations, 5000);
     return () => clearInterval(interval);
   }, [fetchStations]);
 
-  // Poll readings for active station every 5 seconds
   useEffect(() => {
     if (!activeStationId) return;
     fetchReadings(activeStationId);
-
-    const interval = setInterval(() => {
-      fetchReadings(activeStationId);
-    }, 5000);
-
+    const interval = setInterval(() => fetchReadings(activeStationId), 5000);
     return () => clearInterval(interval);
   }, [activeStationId, fetchReadings]);
 
   const activeStation = stations.find(s => s.id === activeStationId);
 
   const getPM25Status = (val: number | null | undefined) => {
-    if (val === null || val === undefined) return { label: 'Offline', color: 'text-[#5f6368] bg-[#f1f3f4]', border: 'border-l-[#5f6368]' };
-    if (val <= 12) return { label: 'Good', color: 'text-[#137333] bg-[#e6f4ea]', border: 'border-l-[#34a853]' };
-    if (val <= 35.4) return { label: 'Moderate', color: 'text-[#b45309] bg-[#fef3c7]', border: 'border-l-[#fbbc04]' };
-    if (val <= 55.4) return { label: 'Sensitive', color: 'text-[#b91c1c] bg-[#fce8e6]', border: 'border-l-[#ea8600]' };
-    return { label: 'Unhealthy', color: 'text-[#c5221f] bg-[#fce8e6]', border: 'border-l-[#ea4335]' };
+    if (val === null || val === undefined) return { label: 'Offline', color: 'text-[#5f6368] bg-[#f1f3f4]' };
+    if (val <= 12)   return { label: 'Good',      color: 'text-[#137333] bg-[#e6f4ea]' };
+    if (val <= 35.4) return { label: 'Moderate',  color: 'text-[#b45309] bg-[#fef3c7]' };
+    if (val <= 55.4) return { label: 'Sensitive', color: 'text-[#b91c1c] bg-[#fce8e6]' };
+    return             { label: 'Unhealthy', color: 'text-[#c5221f] bg-[#fce8e6]' };
   };
+
+  // Show loading while LIFF initialises
+  if (!isReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-[#1a73e8]" />
+          <p className="text-sm text-[#5f6368]">Connecting to LINE…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col p-4 md:p-8 max-w-7xl mx-auto space-y-5">
+
       {/* Header */}
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card px-6 py-4 rounded-3xl border border-border">
         <div className="flex items-center gap-3">
@@ -178,37 +177,38 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-2 mt-3 sm:mt-0 flex-wrap">
-          {error && (
+          {(error || liffError) && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f1f3f4] dark:bg-[#303134] text-xs font-medium">
               <AlertCircle className="h-3.5 w-3.5 text-[#ea4335]" />
               <span className="text-[#ea4335]">Database Offline</span>
             </div>
           )}
 
-          {/* User avatar + sign out */}
-          {session?.user && (
-            <div className="flex items-center gap-2">
-              <Link
-                href="/account"
-                className="flex items-center gap-2 px-2 py-1 rounded-full bg-[#f1f3f4] dark:bg-[#303134] hover:bg-[#e8eaed] dark:hover:bg-[#3c4043] transition-colors"
-              >
-                {session.user.image ? (
-                  <img
-                    src={session.user.image}
-                    alt={session.user.name ?? 'User'}
-                    className="h-5 w-5 rounded-full"
-                  />
-                ) : (
-                  <div className="h-5 w-5 rounded-full bg-[#1a73e8] flex items-center justify-center text-white text-[10px] font-bold">
-                    {session.user.name?.[0] ?? '?'}
-                  </div>
-                )}
-                <span className="text-xs font-medium text-[#202124] dark:text-[#e8eaed] hidden sm:block">
-                  {session.user.name}
-                </span>
-              </Link>
-              <SignOutButton />
-            </div>
+          <Link
+            href="/admin"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f1f3f4] dark:bg-[#303134] text-[#5f6368] text-xs font-medium hover:bg-[#e8eaed] transition-colors"
+          >
+            <Settings className="h-3.5 w-3.5" />
+            <span className="hidden sm:block">Admin</span>
+          </Link>
+
+          {profile && (
+            <Link
+              href="/account"
+              className="flex items-center gap-2 px-2 py-1 rounded-full bg-[#f1f3f4] dark:bg-[#303134] hover:bg-[#e8eaed] dark:hover:bg-[#3c4043] transition-colors"
+            >
+              {profile.pictureUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={profile.pictureUrl} alt={profile.displayName} className="h-5 w-5 rounded-full" />
+              ) : (
+                <div className="h-5 w-5 rounded-full bg-[#06C755] flex items-center justify-center text-white text-[10px] font-bold">
+                  {profile.displayName[0]}
+                </div>
+              )}
+              <span className="text-xs font-medium text-[#202124] dark:text-[#e8eaed] hidden sm:block">
+                {profile.displayName}
+              </span>
+            </Link>
           )}
         </div>
       </header>
@@ -226,7 +226,6 @@ export default function Home() {
       {/* Selected Station Summary & Charts */}
       {activeStation && (
         <section className="space-y-5">
-          {/* Summary Panel */}
           <div className="bg-card px-6 py-4 rounded-3xl border border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-[#e8f0fe] text-[#1a73e8] rounded-2xl">
@@ -241,22 +240,21 @@ export default function Home() {
             {activeStation.latestReading && (
               <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#e8f0fe]">
-                  <span className="w-2 h-2 rounded-full bg-[#1a73e8]"></span>
+                  <span className="w-2 h-2 rounded-full bg-[#1a73e8]" />
                   <span className="text-[#1a73e8]">PM2.5: {activeStation.latestReading.pm25} µg/m³</span>
                 </div>
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#e6f4ea]">
-                  <span className="w-2 h-2 rounded-full bg-[#34a853]"></span>
+                  <span className="w-2 h-2 rounded-full bg-[#34a853]" />
                   <span className="text-[#137333]">PM10: {activeStation.latestReading.pm10} µg/m³</span>
                 </div>
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#fef3c7]">
-                  <span className="w-2 h-2 rounded-full bg-[#fbbc04]"></span>
+                  <span className="w-2 h-2 rounded-full bg-[#fbbc04]" />
                   <span className="text-[#b45309]">TSP: {activeStation.latestReading.tsp} µg/m³</span>
                 </div>
                 <button
                   onClick={() => sendTestAlert(activeStation)}
                   disabled={testAlertState !== 'idle'}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors disabled:opacity-60 cursor-pointer
-                    bg-[#06C755] hover:bg-[#05b34c] text-white disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors disabled:opacity-60 cursor-pointer bg-[#06C755] hover:bg-[#05b34c] text-white disabled:cursor-not-allowed"
                 >
                   {testAlertState === 'sending' && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
                   {testAlertState === 'sent'    && <CheckCircle2 className="h-3.5 w-3.5" />}
@@ -270,7 +268,6 @@ export default function Home() {
             )}
           </div>
 
-          {/* Historical Area Line Charts */}
           <DashboardCharts readings={readings} stationName={activeStation.name} />
         </section>
       )}
@@ -278,7 +275,7 @@ export default function Home() {
       {/* Main Dashboard Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-        {/* Left Column: Station list */}
+        {/* Station list */}
         <div className="lg:col-span-1 flex flex-col space-y-4">
           <div className="bg-card px-5 py-5 rounded-3xl border border-border flex flex-col flex-1 h-[450px]">
             <div className="flex items-center justify-between mb-4">
@@ -289,16 +286,13 @@ export default function Home() {
               <span className="text-xs text-[#5f6368] bg-[#f1f3f4] dark:bg-[#303134] px-2 py-0.5 rounded-full">{stations.length} Registered</span>
             </div>
 
-            {/* List scroll wrapper */}
             <div className="flex-1 overflow-y-auto space-y-2 pr-1">
               {isLoading ? (
                 <div className="h-full flex items-center justify-center">
                   <RefreshCw className="h-6 w-6 animate-spin text-[#1a73e8]" />
                 </div>
               ) : stations.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-sm text-[#5f6368]">
-                  No stations registered.
-                </div>
+                <div className="h-full flex items-center justify-center text-sm text-[#5f6368]">No stations registered.</div>
               ) : (
                 stations.map(station => {
                   const pm25 = station.latestReading?.pm25;
@@ -309,10 +303,9 @@ export default function Home() {
                     <button
                       key={station.id}
                       onClick={() => setActiveStationId(station.id)}
-                      className={`w-full text-left p-3.5 rounded-2xl transition-all duration-150 flex flex-col gap-2 ${isActive
-                          ? 'bg-[#f1f3f4] dark:bg-[#303134]'
-                          : 'bg-transparent hover:bg-[#f8f9fa] dark:hover:bg-[#303134]/60'
-                        }`}
+                      className={`w-full text-left p-3.5 rounded-2xl transition-all duration-150 flex flex-col gap-2 ${
+                        isActive ? 'bg-[#f1f3f4] dark:bg-[#303134]' : 'bg-transparent hover:bg-[#f8f9fa] dark:hover:bg-[#303134]/60'
+                      }`}
                     >
                       <div className="flex justify-between items-start">
                         <div>
@@ -353,7 +346,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right Column: Live Map */}
+        {/* Live Map */}
         <div className="lg:col-span-2 h-[450px]">
           <MapComponent
             stations={stations}

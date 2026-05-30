@@ -1,5 +1,2 @@
-export { auth as middleware } from '@/auth';
-
-export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|login|liff|api/auth|api/subscribe|.*\\..*).*)'],
-};
+// No route protection — authentication is handled by LIFF inside LINE.
+export const config = { matcher: [] };
