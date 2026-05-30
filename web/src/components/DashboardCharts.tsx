@@ -93,8 +93,10 @@ export default function DashboardCharts({ readings, stationName }: DashboardChar
                     color: '#202124',
                     boxShadow: '0 1px 3px rgb(0 0 0 / 0.1)'
                   }}
-                  formatter={(value: number) => [
-                    formatter ? formatter(value) : `${value.toFixed(1)} ${unit}`,
+                  formatter={(value) => [
+                    typeof value === 'number'
+                      ? (formatter ? formatter(value) : `${value.toFixed(1)} ${unit}`)
+                      : String(value),
                     title,
                   ]}
                 />
