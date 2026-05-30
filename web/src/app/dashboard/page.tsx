@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { useLiff } from '@/lib/liffContext';
 import { readingStatus, isUnhealthy } from '@/lib/airQuality';
 import {
   MapPin,
@@ -44,8 +43,6 @@ const MapComponent = dynamic(() => import('@/components/MapComponent'), {
 });
 
 export default function DashboardPage() {
-  const { profile, isReady, error: liffError } = useLiff();
-
   const [stations, setStations] = useState<Station[]>([]);
   const [activeStationId, setActiveStationId] = useState<string | null>(null);
   const [readings, setReadings] = useState<Reading[]>([]);
@@ -166,13 +163,12 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex items-center gap-2 mt-3 sm:mt-0 flex-wrap">
-          {(error || liffError) && (
+          {error && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f1f3f4] dark:bg-[#303134] text-xs font-medium">
               <AlertCircle className="h-3.5 w-3.5 text-[#ea4335]" />
               <span className="text-[#ea4335]">Database Offline</span>
             </div>
           )}
-
           <Link
             href="/admin"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f1f3f4] dark:bg-[#303134] text-[#5f6368] text-xs font-medium hover:bg-[#e8eaed] transition-colors"
@@ -180,28 +176,6 @@ export default function DashboardPage() {
             <Settings className="h-3.5 w-3.5" />
             <span className="hidden sm:block">Admin</span>
           </Link>
-
-          {profile && (
-            <Link
-              href="/account"
-              className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-[#f1f3f4] dark:bg-[#303134] hover:bg-[#e8eaed] dark:hover:bg-[#3c4043] transition-colors"
-            >
-              {profile.pictureUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={profile.pictureUrl} alt={profile.displayName} className="h-8 w-8 rounded-full ring-2 ring-[#06C755]/40" />
-              ) : (
-                <div className="h-8 w-8 rounded-full bg-[#06C755] flex items-center justify-center text-white text-sm font-bold ring-2 ring-[#06C755]/40">
-                  {profile.displayName[0]}
-                </div>
-              )}
-              <div className="flex flex-col leading-tight">
-                <span className="text-[10px] text-[#5f6368] dark:text-[#9aa0a6]">สวัสดี</span>
-                <span className="text-xs font-semibold text-[#202124] dark:text-[#e8eaed] max-w-[120px] truncate">
-                  {profile.displayName}
-                </span>
-              </div>
-            </Link>
-          )}
         </div>
       </header>
 

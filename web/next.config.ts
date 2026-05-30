@@ -9,9 +9,6 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_BASE_PATH: base,
     NEXT_PUBLIC_LINE_NOTIFY_CONFIGURED: process.env.LINE_CHANNEL_ACCESS_TOKEN ? 'true' : 'false',
-    NEXT_PUBLIC_LIFF_ID_DASHBOARD: process.env.LIFF_ID_DASHBOARD ?? '',
-    NEXT_PUBLIC_LIFF_ID_ACCOUNT:   process.env.LIFF_ID_ACCOUNT   ?? '',
-    NEXT_PUBLIC_LIFF_ID_ADMIN:     process.env.LIFF_ID_ADMIN     ?? '',
   },
 };
 

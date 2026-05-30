@@ -1,12 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, User, Bell, BellOff, ExternalLink } from 'lucide-react';
-import { useLiff } from '@/lib/liffContext';
+import { ArrowLeft, User, Bell, BellOff } from 'lucide-react';
 
 export default function AccountPage() {
-  const { profile } = useLiff();
-
   return (
     <div className="min-h-screen flex flex-col p-4 md:p-8 max-w-2xl mx-auto space-y-5">
 
@@ -23,51 +20,11 @@ export default function AccountPage() {
             <User className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-[#202124] dark:text-[#e8eaed] tracking-tight">My Account</h1>
-            <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6]">LINE profile</p>
+            <h1 className="text-lg font-semibold text-[#202124] dark:text-[#e8eaed] tracking-tight">Account</h1>
+            <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6]">LINE OA Alerts</p>
           </div>
-          {profile && (
-            <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-[#f1f3f4] dark:bg-[#303134] ml-2">
-              {profile.pictureUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={profile.pictureUrl} alt={profile.displayName} className="h-8 w-8 rounded-full ring-2 ring-[#06C755]/40" />
-              ) : (
-                <div className="h-8 w-8 rounded-full bg-[#06C755] flex items-center justify-center text-white text-sm font-bold ring-2 ring-[#06C755]/40">
-                  {profile.displayName[0]}
-                </div>
-              )}
-              <div className="flex flex-col leading-tight">
-                <span className="text-[10px] text-[#5f6368] dark:text-[#9aa0a6]">สวัสดี</span>
-                <span className="text-xs font-semibold text-[#202124] dark:text-[#e8eaed] max-w-[120px] truncate">{profile.displayName}</span>
-              </div>
-            </div>
-          )}
         </div>
       </header>
-
-      {/* Profile card */}
-      {profile && (
-        <div className="bg-card rounded-3xl border border-border px-6 py-6">
-          <div className="flex items-center gap-5">
-            {profile.pictureUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={profile.pictureUrl} alt={profile.displayName} width={72} height={72} className="rounded-full ring-4 ring-[#e8f0fe]" />
-            ) : (
-              <div className="w-[72px] h-[72px] rounded-full bg-[#06C755] flex items-center justify-center text-white text-2xl font-bold ring-4 ring-[#e8f0fe]">
-                {profile.displayName[0]}
-              </div>
-            )}
-            <div>
-              <h2 className="text-lg font-semibold text-[#202124] dark:text-[#e8eaed]">{profile.displayName}</h2>
-              <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6] mt-0.5 font-mono">{profile.userId}</p>
-              <span className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full bg-[#e6f4ea] text-[#137333] text-[10px] font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#34a853] inline-block" />
-                LINE Connected
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* LINE OA Alerts */}
       <div className="bg-card rounded-3xl border border-border overflow-hidden">
@@ -83,23 +40,15 @@ export default function AccountPage() {
             </span>
           )}
         </div>
-        <div className="px-6 py-4 space-y-3">
+        <div className="px-6 py-4">
           <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6]">
             Alerts are sent via LINE multicast to subscribed members when any pollutant reaches the red level
             (PM2.5 &gt; 37.5 · PM10 &gt; 100 · TSP &gt; 200 µg/m³).
             Throttled to once per station per <span className="font-semibold">30 minutes</span>.
           </p>
-          {process.env.NEXT_PUBLIC_LIFF_ID && (
-            <a
-              href={`https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-[#06C755] hover:bg-[#05b34c] text-white text-sm font-medium transition-colors"
-            >
-              <ExternalLink className="h-4 w-4" />
-              Manage Subscription in LINE
-            </a>
-          )}
+          <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6] mt-2">
+            Members are subscribed automatically when they add <span className="font-semibold">@231hohun</span> as a friend on LINE.
+          </p>
         </div>
       </div>
 
