@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { stationId, stationName, stationCode, pm25, pm10, tsp } = body;
+  const { stationId, stationName, stationCode, pm25, pm10, tsp, windSpeed, windDirection, temperature } = body;
   if (!stationId || !stationName || pm25 === undefined) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    await sendLineMulticast(token, subscribers.map(s => s.lineUserId), { stationId, stationName, stationCode, pm25, pm10, tsp });
+    await sendLineMulticast(token, subscribers.map(s => s.lineUserId), { stationId, stationName, stationCode, pm25, pm10, tsp, windSpeed, windDirection, temperature });
     return NextResponse.json({ sent: true, station: stationName, pm25, recipients: subscribers.length, test: true });
   } catch (err) {
     console.error('[alert/test] LINE multicast failed:', err);
