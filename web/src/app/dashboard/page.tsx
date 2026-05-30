@@ -14,6 +14,7 @@ import {
   Settings
 } from 'lucide-react';
 import DashboardCharts from '@/components/DashboardCharts';
+import FaceIcon from '@/components/FaceIcon';
 
 interface Reading {
   id: string;
@@ -194,9 +195,10 @@ export default function DashboardPage() {
         <section className="space-y-5">
           <div className="bg-card px-6 py-4 rounded-3xl border border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-[#e8f0fe] text-[#1a73e8] rounded-2xl">
-                <BarChart3 className="h-5 w-5" />
-              </div>
+              <FaceIcon
+                level={readingStatus(activeStation.latestReading?.pm25, activeStation.latestReading?.pm10, activeStation.latestReading?.tsp).level}
+                size={48}
+              />
               <div>
                 <h3 className="font-semibold text-[#202124] dark:text-[#e8eaed]">{activeStation.name} Telemetry</h3>
                 <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6]">{activeStation.latitude.toFixed(4)}, {activeStation.longitude.toFixed(4)}</p>
@@ -272,14 +274,20 @@ export default function DashboardPage() {
                         isActive ? 'bg-[#f1f3f4] dark:bg-[#303134]' : 'bg-transparent hover:bg-[#f8f9fa] dark:hover:bg-[#303134]/60'
                       }`}
                     >
-                      <div className="flex justify-between items-start">
-                        <div>
+                      <div className="flex items-center gap-2.5">
+                        <FaceIcon
+                          level={readingStatus(station.latestReading?.pm25, station.latestReading?.pm10, station.latestReading?.tsp).level}
+                          size={36}
+                        />
+                        <div className="flex-1 min-w-0">
                           <h4 className="font-medium text-sm text-[#202124] dark:text-[#e8eaed] line-clamp-1">{station.name}</h4>
-                          <span className="text-xs text-[#5f6368]">{station.code}</span>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-xs text-[#5f6368]">{station.code}</span>
+                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${status.color}`}>
+                              {status.label}
+                            </span>
+                          </div>
                         </div>
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${status.color}`}>
-                          {status.label}
-                        </span>
                       </div>
 
                       {station.latestReading ? (
