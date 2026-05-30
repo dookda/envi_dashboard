@@ -1,7 +1,5 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import Google from 'next-auth/providers/google';
-import LINE from 'next-auth/providers/line';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 
@@ -11,7 +9,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
       credentials: {
-        email: { label: 'Email', type: 'email' },
+        email: { label: 'Username', type: 'text' },
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
@@ -25,16 +23,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return { id: user.id, email: user.email, name: user.name };
       },
     }),
-    Google({
-      clientId: process.env.AUTH_GOOGLE_CLIENT_ID,
-      clientSecret: process.env.AUTH_GOOGLE_CLIENT_SECRET,
-    }),
-    ...(process.env.LINE_CLIENT_ID && process.env.LINE_CLIENT_SECRET
-      ? [LINE({
-          clientId: process.env.LINE_CLIENT_ID,
-          clientSecret: process.env.LINE_CLIENT_SECRET,
-        })]
-      : []),
   ],
   pages: {
     signIn: '/air/login',

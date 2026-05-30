@@ -8,7 +8,9 @@ import {
   MapPin,
   BarChart3,
   RefreshCw,
-  AlertCircle
+  AlertCircle,
+  BellRing,
+  CheckCircle2
 } from 'lucide-react';
 import DashboardCharts from '@/components/DashboardCharts';
 import SignOutButton from '@/components/SignOutButton';
@@ -48,6 +50,7 @@ export default function Home() {
   const [readings, setReadings] = useState<Reading[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [testAlertState, setTestAlertState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
   const triggerAlert = useCallback(async (station: Station) => {
     const r = station.latestReading;
@@ -68,6 +71,30 @@ export default function Home() {
     } catch {
       // Alert is best-effort; don't break the dashboard if it fails
     }
+  }, []);
+
+  const sendTestAlert = useCallback(async (station: Station) => {
+    const r = station.latestReading;
+    if (!r) return;
+    setTestAlertState('sending');
+    try {
+      const res = await fetch('/air/api/alert/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          stationId: station.id,
+          stationName: station.name,
+          stationCode: station.code,
+          pm25: r.pm25,
+          pm10: r.pm10,
+          tsp: r.tsp,
+        }),
+      });
+      setTestAlertState(res.ok ? 'sent' : 'error');
+    } catch {
+      setTestAlertState('error');
+    }
+    setTimeout(() => setTestAlertState('idle'), 3000);
   }, []);
 
   const fetchStations = useCallback(async () => {
@@ -225,6 +252,20 @@ export default function Home() {
                   <span className="w-2 h-2 rounded-full bg-[#fbbc04]"></span>
                   <span className="text-[#b45309]">TSP: {activeStation.latestReading.tsp} µg/m³</span>
                 </div>
+                <button
+                  onClick={() => sendTestAlert(activeStation)}
+                  disabled={testAlertState !== 'idle'}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors disabled:opacity-60 cursor-pointer
+                    bg-[#06C755] hover:bg-[#05b34c] text-white disabled:cursor-not-allowed"
+                >
+                  {testAlertState === 'sending' && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
+                  {testAlertState === 'sent'    && <CheckCircle2 className="h-3.5 w-3.5" />}
+                  {testAlertState === 'error'   && <AlertCircle className="h-3.5 w-3.5" />}
+                  {testAlertState === 'idle'    && <BellRing className="h-3.5 w-3.5" />}
+                  {testAlertState === 'sending' ? 'Sending…' :
+                   testAlertState === 'sent'    ? 'Sent!' :
+                   testAlertState === 'error'   ? 'Failed' : 'Test Alert'}
+                </button>
               </div>
             )}
           </div>

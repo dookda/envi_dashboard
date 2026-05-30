@@ -46,7 +46,7 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       ADMIN_NAME: ${ADMIN_NAME}
       LINE_CHANNEL_ACCESS_TOKEN: ${LINE_CHANNEL_ACCESS_TOKEN}
-      LINE_TARGET_ID: ${LINE_TARGET_ID}
+      LIFF_ID: ${LIFF_ID}
     depends_on:
       db:
         condition: service_healthy

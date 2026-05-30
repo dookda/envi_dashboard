@@ -9,7 +9,7 @@ generator client {
 }
 
 model Station {
-  id        String    @id @default(uuid())
+  id        String    @id @default(uuid()) @db.VarChar(36)
   name      String
   code      String    @unique
   latitude  Float
@@ -20,8 +20,8 @@ model Station {
 }
 
 model Reading {
-  id        String   @id @default(uuid())
-  stationId String
+  id        String   @id @default(uuid()) @db.VarChar(36)
+  stationId String   @db.VarChar(36)
   station   Station  @relation(fields: [stationId], references: [id], onDelete: Cascade)
   pm25      Float
   pm10      Float
@@ -40,4 +40,12 @@ model User {
   role      String   @default("operator")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Subscriber {
+  id          String   @id @default(uuid()) @db.VarChar(36)
+  lineUserId  String   @unique @db.VarChar(64)
+  displayName String?
+  pictureUrl  String?
+  createdAt   DateTime @default(now())
 }

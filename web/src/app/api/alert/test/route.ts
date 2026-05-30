@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendLineMulticast, type AlertPayload } from '@/lib/lineNotify';
-import { canAlert, markAlerted, cooldownRemainingMs } from '@/lib/alertCooldown';
 import prisma from '@/lib/prisma';
-
-const CRITICAL_THRESHOLD = 55.4;
 
 export async function POST(request: NextRequest) {
   const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
@@ -23,29 +20,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
-  if (pm25 <= CRITICAL_THRESHOLD) {
-    return NextResponse.json({ skipped: true, reason: 'Below critical threshold' });
-  }
-
-  if (!canAlert(stationId)) {
-    const remainingMin = Math.ceil(cooldownRemainingMs(stationId) / 60000);
-    return NextResponse.json(
-      { skipped: true, reason: `Cooldown active — next alert in ${remainingMin} min` },
-      { status: 429 }
-    );
-  }
-
   const subscribers = await prisma.subscriber.findMany({ select: { lineUserId: true } });
   if (subscribers.length === 0) {
-    return NextResponse.json({ skipped: true, reason: 'No subscribers' });
+    return NextResponse.json({ skipped: true, reason: 'No subscribers yet' });
   }
 
   try {
     await sendLineMulticast(token, subscribers.map(s => s.lineUserId), { stationId, stationName, stationCode, pm25, pm10, tsp });
-    markAlerted(stationId);
-    return NextResponse.json({ sent: true, station: stationName, pm25, recipients: subscribers.length });
+    return NextResponse.json({ sent: true, station: stationName, pm25, recipients: subscribers.length, test: true });
   } catch (err) {
-    console.error('[alert] LINE multicast failed:', err);
+    console.error('[alert/test] LINE multicast failed:', err);
     return NextResponse.json({ error: 'Failed to send LINE notification' }, { status: 502 });
   }
 }
