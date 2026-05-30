@@ -5,7 +5,6 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useLiff } from '@/lib/liffContext';
 import { readingStatus, isUnhealthy } from '@/lib/airQuality';
-import LiffGuard from '@/components/LiffGuard';
 import {
   MapPin,
   BarChart3,
@@ -153,7 +152,6 @@ export default function DashboardPage() {
   };
 
   return (
-    <LiffGuard>
     <div className="min-h-screen flex flex-col p-4 md:p-8 max-w-7xl mx-auto space-y-5">
 
       {/* Header */}
@@ -350,6 +348,5 @@ export default function DashboardPage() {
       </div>
 
     </div>
-    </LiffGuard>
   );
 }
