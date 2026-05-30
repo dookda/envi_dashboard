@@ -21,6 +21,9 @@ interface Reading {
   pm25: number;
   pm10: number;
   tsp: number;
+  windSpeed: number;
+  windDirection: number;
+  temperature: number;
   timestamp: string;
 }
 
@@ -65,6 +68,9 @@ export default function DashboardPage() {
           pm25: r.pm25,
           pm10: r.pm10,
           tsp: r.tsp,
+          windSpeed: r.windSpeed,
+          windDirection: r.windDirection,
+          temperature: r.temperature,
         }),
       });
     } catch {
@@ -87,6 +93,9 @@ export default function DashboardPage() {
           pm25: r.pm25,
           pm10: r.pm10,
           tsp: r.tsp,
+          windSpeed: r.windSpeed,
+          windDirection: r.windDirection,
+          temperature: r.temperature,
         }),
       });
       setTestAlertState(res.ok ? 'sent' : 'error');

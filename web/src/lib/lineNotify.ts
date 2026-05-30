@@ -9,6 +9,14 @@ export interface AlertPayload {
   pm25: number;
   pm10: number;
   tsp: number;
+  windSpeed?: number;
+  windDirection?: number;
+  temperature?: number;
+}
+
+function degToCompass(deg: number): string {
+  const dirs = ['N','NE','E','SE','S','SW','W','NW'];
+  return dirs[Math.round(deg / 45) % 8];
 }
 
 function levelEmoji(level: string): string {
@@ -66,10 +74,35 @@ function buildMessages(payload: AlertPayload) {
                 { type: 'text', text: now, size: 'sm', flex: 3, wrap: true },
               ],
             },
+            ...(payload.temperature != null || payload.windSpeed != null ? [{
+              type: 'box', layout: 'baseline', spacing: 'sm',
+              contents: [
+                { type: 'text', text: '🌡️ สภาพอากาศ', color: '#5f6368', size: 'sm', flex: 2 },
+                {
+                  type: 'text',
+                  text: [
+                    payload.temperature != null ? `${payload.temperature.toFixed(1)}°C` : null,
+                    payload.windSpeed != null
+                      ? `💨 ${payload.windSpeed.toFixed(1)} km/h${payload.windDirection != null ? ` (${degToCompass(payload.windDirection)})` : ''}`
+                      : null,
+                  ].filter(Boolean).join('  '),
+                  size: 'sm', flex: 3, wrap: true,
+                },
+              ],
+            }] : []),
             { type: 'separator' },
             {
               type: 'box', layout: 'horizontal', spacing: 'sm',
               contents: [
+                {
+                  type: 'box', layout: 'vertical', flex: 1,
+                  backgroundColor: tspStatus.bgColor, cornerRadius: 'md', paddingAll: 'sm',
+                  contents: [
+                    { type: 'text', text: `${levelEmoji(tspl)} TSP`, size: 'xs', color: tspStatus.textColor, align: 'center' },
+                    { type: 'text', text: payload.tsp.toFixed(1), size: 'md', weight: 'bold', color: tspStatus.textColor, align: 'center' },
+                    { type: 'text', text: 'µg/m³', size: 'xxs', color: '#5f6368', align: 'center' },
+                  ],
+                },
                 {
                   type: 'box', layout: 'vertical', flex: 1,
                   backgroundColor: pm25Status.bgColor, cornerRadius: 'md', paddingAll: 'sm',
@@ -85,15 +118,6 @@ function buildMessages(payload: AlertPayload) {
                   contents: [
                     { type: 'text', text: `${levelEmoji(pm10l)} PM10`, size: 'xs', color: pm10Status.textColor, align: 'center' },
                     { type: 'text', text: payload.pm10.toFixed(1), size: 'md', weight: 'bold', color: pm10Status.textColor, align: 'center' },
-                    { type: 'text', text: 'µg/m³', size: 'xxs', color: '#5f6368', align: 'center' },
-                  ],
-                },
-                {
-                  type: 'box', layout: 'vertical', flex: 1,
-                  backgroundColor: tspStatus.bgColor, cornerRadius: 'md', paddingAll: 'sm',
-                  contents: [
-                    { type: 'text', text: `${levelEmoji(tspl)} TSP`, size: 'xs', color: tspStatus.textColor, align: 'center' },
-                    { type: 'text', text: payload.tsp.toFixed(1), size: 'md', weight: 'bold', color: tspStatus.textColor, align: 'center' },
                     { type: 'text', text: 'µg/m³', size: 'xxs', color: '#5f6368', align: 'center' },
                   ],
                 },

@@ -23,11 +23,14 @@ model Reading {
   id        String   @id @default(uuid()) @db.VarChar(36)
   stationId String   @db.VarChar(36)
   station   Station  @relation(fields: [stationId], references: [id], onDelete: Cascade)
-  pm25      Float
-  pm10      Float
-  tsp       Float
-  timestamp DateTime @default(now())
-  createdAt DateTime @default(now())
+  pm25          Float
+  pm10          Float
+  tsp           Float
+  windSpeed     Float    @default(0)
+  windDirection Float    @default(0)
+  temperature   Float    @default(30)
+  timestamp     DateTime @default(now())
+  createdAt     DateTime @default(now())
 
   @@index([timestamp])
 }

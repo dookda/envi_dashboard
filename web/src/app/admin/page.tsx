@@ -16,7 +16,7 @@ interface Station {
   id: string;
   name: string;
   code: string;
-  latestReading: { pm25: number; pm10: number; tsp: number } | null;
+  latestReading: { pm25: number; pm10: number; tsp: number; windSpeed: number; windDirection: number; temperature: number } | null;
 }
 
 type SendState = 'idle' | 'sending' | 'sent' | 'error';
@@ -52,6 +52,9 @@ export default function AdminPage() {
         pm25: station.latestReading.pm25,
         pm10: station.latestReading.pm10,
         tsp: station.latestReading.tsp,
+        windSpeed: station.latestReading.windSpeed,
+        windDirection: station.latestReading.windDirection,
+        temperature: station.latestReading.temperature,
       }),
     });
     const data = await res.json();

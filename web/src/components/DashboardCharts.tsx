@@ -7,6 +7,9 @@ interface Reading {
   pm25: number;
   pm10: number;
   tsp: number;
+  windSpeed: number;
+  windDirection: number;
+  temperature: number;
   timestamp: string;
 }
 
@@ -15,23 +18,29 @@ interface DashboardChartsProps {
   stationName: string;
 }
 
+function degToCompass(deg: number): string {
+  const dirs = ['N','NE','E','SE','S','SW','W','NW'];
+  return dirs[Math.round(deg / 45) % 8];
+}
+
 export default function DashboardCharts({ readings, stationName }: DashboardChartsProps) {
   const chartData = readings.map(r => ({
     ...r,
     formattedTime: new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
   }));
 
-  const avg = (key: 'pm25' | 'pm10' | 'tsp') => {
+  const avg = (key: keyof Omit<Reading, 'id' | 'timestamp'>) => {
     if (chartData.length === 0) return 0;
-    return chartData.reduce((sum, r) => sum + r[key], 0) / chartData.length;
+    return chartData.reduce((sum, r) => sum + (r[key] as number), 0) / chartData.length;
   };
 
   const renderChart = (
-    dataKey: 'pm25' | 'pm10' | 'tsp',
+    dataKey: keyof Omit<Reading, 'id' | 'timestamp'>,
     title: string,
     color: string,
     gradientId: string,
-    unit: string = 'µg/m³'
+    unit: string = 'µg/m³',
+    formatter?: (v: number) => string,
   ) => {
     const avgValue = avg(dataKey);
     return (
@@ -40,8 +49,8 @@ export default function DashboardCharts({ readings, stationName }: DashboardChar
           <h4 className="font-semibold text-sm text-[#202124] dark:text-[#e8eaed]">{title}</h4>
           <div className="flex items-center gap-2">
             <span className="flex items-center gap-1 text-xs font-medium text-[#5f6368] dark:text-[#9aa0a6]">
-              <span className="inline-block w-4 border-t-2 border-dashed" style={{ borderColor: color }}></span>
-              Avg {avgValue.toFixed(1)}
+              <span className="inline-block w-4 border-t-2 border-dashed" style={{ borderColor: color }} />
+              Avg {formatter ? formatter(avgValue) : avgValue.toFixed(1)}
             </span>
             <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-[#f1f3f4] dark:bg-[#303134] text-[#5f6368] dark:text-[#9aa0a6]">
               {unit}
@@ -73,6 +82,7 @@ export default function DashboardCharts({ readings, stationName }: DashboardChar
                   tickLine={false}
                   axisLine={false}
                   tick={{ fill: '#9aa0a6', fontSize: 10 }}
+                  tickFormatter={formatter}
                 />
                 <Tooltip
                   contentStyle={{
@@ -83,6 +93,10 @@ export default function DashboardCharts({ readings, stationName }: DashboardChar
                     color: '#202124',
                     boxShadow: '0 1px 3px rgb(0 0 0 / 0.1)'
                   }}
+                  formatter={(value: number) => [
+                    formatter ? formatter(value) : `${value.toFixed(1)} ${unit}`,
+                    title,
+                  ]}
                 />
                 <ReferenceLine
                   y={avgValue}
@@ -93,7 +107,7 @@ export default function DashboardCharts({ readings, stationName }: DashboardChar
                 />
                 <Area
                   type="monotone"
-                  dataKey={dataKey}
+                  dataKey={dataKey as string}
                   stroke={color}
                   strokeWidth={2}
                   fillOpacity={1}
@@ -108,10 +122,19 @@ export default function DashboardCharts({ readings, stationName }: DashboardChar
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-      {renderChart('pm25', 'PM2.5 Trend', '#1a73e8', 'colorPm25')}
-      {renderChart('pm10', 'PM10 Trend', '#34a853', 'colorPm10')}
-      {renderChart('tsp', 'TSP Trend', '#fbbc04', 'colorTsp')}
+    <div className="space-y-5">
+      {/* Dust particles */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {renderChart('tsp',  'TSP Trend',   '#9c27b0', 'colorTsp',   'µg/m³')}
+        {renderChart('pm25', 'PM2.5 Trend', '#1a73e8', 'colorPm25',  'µg/m³')}
+        {renderChart('pm10', 'PM10 Trend',  '#34a853', 'colorPm10',  'µg/m³')}
+      </div>
+      {/* Weather */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {renderChart('temperature',   'Temperature',     '#ea4335', 'colorTemp',  '°C')}
+        {renderChart('windSpeed',     'Wind Speed',      '#00bcd4', 'colorWind',  'km/h')}
+        {renderChart('windDirection', 'Wind Direction',  '#ff9800', 'colorWDir',  '°', degToCompass)}
+      </div>
     </div>
   );
 }
