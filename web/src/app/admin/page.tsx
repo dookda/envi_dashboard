@@ -21,40 +21,12 @@ interface Station {
 
 type SendState = 'idle' | 'sending' | 'sent' | 'error';
 
-const MESSAGE_TEMPLATES = [
-  {
-    label: 'คุณภาพอากาศดี',
-    color: '#137333',
-    bg: '#e6f4ea',
-    text: '🟢 แจ้งเตือน: คุณภาพอากาศในพื้นที่อยู่ในเกณฑ์ดี\nค่า PM2.5 อยู่ในระดับปลอดภัย เหมาะสำหรับกิจกรรมกลางแจ้ง',
-  },
-  {
-    label: 'ระดับปานกลาง',
-    color: '#b45309',
-    bg: '#fef3c7',
-    text: '🟡 แจ้งเตือน: คุณภาพอากาศอยู่ในระดับปานกลาง\nกลุ่มผู้ป่วยโรคระบบทางเดินหายใจควรระมัดระวัง และลดกิจกรรมกลางแจ้งที่ใช้แรงหนัก',
-  },
-  {
-    label: 'มีผลต่อสุขภาพ',
-    color: '#c5221f',
-    bg: '#fce8e6',
-    text: '🔴 แจ้งเตือน: ค่าฝุ่น PM2.5 อยู่ในระดับที่มีผลกระทบต่อสุขภาพ\nแนะนำให้สวมใส่หน้ากาก N95 และหลีกเลี่ยงกิจกรรมกลางแจ้ง',
-  },
-  {
-    label: 'ประกาศทั่วไป',
-    color: '#1a73e8',
-    bg: '#e8f0fe',
-    text: '📢 ประกาศจากระบบติดตามคุณภาพสิ่งแวดล้อม\n\n[ระบุข้อความที่ต้องการแจ้ง]',
-  },
-];
 
 export default function AdminPage() {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [stations, setStations] = useState<Station[]>([]);
   const [selectedStation, setSelectedStation] = useState<string>('');
-  const [customMsg, setCustomMsg] = useState('');
   const [broadcastState, setBroadcastState] = useState<SendState>('idle');
-  const [customState, setCustomState] = useState<SendState>('idle');
   const [result, setResult] = useState<string | null>(null);
 
   useEffect(() => {
@@ -86,21 +58,6 @@ export default function AdminPage() {
     setBroadcastState(res.ok ? 'sent' : 'error');
     setResult(JSON.stringify(data, null, 2));
     setTimeout(() => setBroadcastState('idle'), 3000);
-  }
-
-  async function sendCustomMessage() {
-    if (!customMsg.trim()) return;
-    setCustomState('sending');
-    setResult(null);
-    const res = await fetch('/air/api/admin/message', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: customMsg }),
-    });
-    const data = await res.json();
-    setCustomState(res.ok ? 'sent' : 'error');
-    setResult(JSON.stringify(data, null, 2));
-    setTimeout(() => setCustomState('idle'), 3000);
   }
 
   async function removeSubscriber(lineUserId: string) {
@@ -203,48 +160,6 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Send Custom Message */}
-      <div className="bg-card rounded-3xl border border-border overflow-hidden">
-        <div className="px-6 py-4 border-b border-border flex items-center gap-2">
-          <Send className="h-4 w-4 text-[#1a73e8]" />
-          <h2 className="font-semibold text-sm text-[#202124] dark:text-[#e8eaed]">Send Custom Message</h2>
-        </div>
-        <div className="px-6 py-4 space-y-3">
-          <div>
-            <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6] mb-2">Templates</p>
-            <div className="flex flex-wrap gap-2">
-              {MESSAGE_TEMPLATES.map(t => (
-                <button
-                  key={t.label}
-                  onClick={() => setCustomMsg(t.text)}
-                  style={{ backgroundColor: t.bg, color: t.color }}
-                  className="px-3 py-1.5 rounded-full text-xs font-medium hover:opacity-80 transition-opacity cursor-pointer"
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <textarea
-            value={customMsg}
-            onChange={e => setCustomMsg(e.target.value)}
-            placeholder="Type a message to send to all subscribers…"
-            rows={3}
-            className="w-full px-3 py-2.5 rounded-2xl border border-border bg-[#f8f9fa] dark:bg-[#303134] text-sm text-[#202124] dark:text-[#e8eaed] placeholder:text-[#9aa0a6] focus:outline-none focus:border-[#1a73e8] resize-none"
-          />
-          <button
-            onClick={sendCustomMessage}
-            disabled={customState !== 'idle' || !customMsg.trim()}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-full bg-[#06C755] hover:bg-[#05b34c] disabled:opacity-60 text-white text-sm font-medium transition-colors cursor-pointer"
-          >
-            {customState === 'sending' && <RefreshCw className="h-4 w-4 animate-spin" />}
-            {customState === 'sent'    && <CheckCircle2 className="h-4 w-4" />}
-            {customState === 'error'   && <AlertCircle className="h-4 w-4" />}
-            {customState === 'idle'    && <Send className="h-4 w-4" />}
-            {customState === 'sending' ? 'Sending…' : customState === 'sent' ? 'Sent!' : customState === 'error' ? 'Failed' : 'Send to All Subscribers'}
-          </button>
-        </div>
-      </div>
 
       {/* Response */}
       {result && (
