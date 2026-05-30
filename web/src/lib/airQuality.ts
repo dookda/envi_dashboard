@@ -9,10 +9,10 @@ export interface AQStatus {
 }
 
 const LEVELS: Record<AQLevel, AQStatus> = {
-  good:      { level: 'good',      label: 'Good',      color: '#34a853', bgColor: '#e6f4ea', textColor: '#137333' },
-  moderate:  { level: 'moderate',  label: 'Moderate',  color: '#fbbc04', bgColor: '#fef3c7', textColor: '#b45309' },
-  unhealthy: { level: 'unhealthy', label: 'Unhealthy', color: '#ea4335', bgColor: '#fce8e6', textColor: '#c5221f' },
-  offline:   { level: 'offline',   label: 'Offline',   color: '#9aa0a6', bgColor: '#f1f3f4', textColor: '#5f6368' },
+  good:      { level: 'good',      label: 'ดี',              color: '#34a853', bgColor: '#e6f4ea', textColor: '#137333' },
+  moderate:  { level: 'moderate',  label: 'ปานกลาง',         color: '#fbbc04', bgColor: '#fef3c7', textColor: '#b45309' },
+  unhealthy: { level: 'unhealthy', label: 'มีผลต่อสุขภาพ',  color: '#ea4335', bgColor: '#fce8e6', textColor: '#c5221f' },
+  offline:   { level: 'offline',   label: 'ออฟไลน์',         color: '#9aa0a6', bgColor: '#f1f3f4', textColor: '#5f6368' },
 };
 
 export function pm25Level(v: number): AQLevel {

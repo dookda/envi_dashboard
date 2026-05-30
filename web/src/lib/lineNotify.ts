@@ -35,7 +35,7 @@ function buildMessages(payload: AlertPayload) {
   return [
     {
       type: 'flex',
-      altText: `${overallEmoji} Air Quality Alert — ${label} | PM2.5: ${payload.pm25.toFixed(1)} µg/m³`,
+      altText: `${overallEmoji} แจ้งเตือนคุณภาพอากาศ — ${label} | PM2.5: ${payload.pm25.toFixed(1)} µg/m³`,
       contents: {
         type: 'bubble',
         styles: { header: { backgroundColor: color } },
@@ -43,7 +43,7 @@ function buildMessages(payload: AlertPayload) {
           type: 'box',
           layout: 'vertical',
           contents: [
-            { type: 'text', text: `${overallEmoji} Air Quality Alert`, color: '#ffffff', size: 'lg', weight: 'bold' },
+            { type: 'text', text: `${overallEmoji} แจ้งเตือนคุณภาพอากาศ`, color: '#ffffff', size: 'lg', weight: 'bold' },
             { type: 'text', text: label, color: '#ffffff', size: 'sm' },
           ],
         },
@@ -55,14 +55,14 @@ function buildMessages(payload: AlertPayload) {
             {
               type: 'box', layout: 'baseline', spacing: 'sm',
               contents: [
-                { type: 'text', text: '📍 Station', color: '#5f6368', size: 'sm', flex: 2 },
+                { type: 'text', text: '📍 สถานี', color: '#5f6368', size: 'sm', flex: 2 },
                 { type: 'text', text: `${payload.stationName} (${payload.stationCode})`, size: 'sm', weight: 'bold', flex: 3, wrap: true },
               ],
             },
             {
               type: 'box', layout: 'baseline', spacing: 'sm',
               contents: [
-                { type: 'text', text: '🕐 Time', color: '#5f6368', size: 'sm', flex: 2 },
+                { type: 'text', text: '🕐 เวลา', color: '#5f6368', size: 'sm', flex: 2 },
                 { type: 'text', text: now, size: 'sm', flex: 3, wrap: true },
               ],
             },
@@ -101,7 +101,7 @@ function buildMessages(payload: AlertPayload) {
             },
             {
               type: 'text',
-              text: `⚠️ One or more pollutants have reached an unhealthy level. Please take precautionary measures.`,
+              text: '⚠️ ค่าฝุ่นละอองเกินมาตรฐาน กรุณาระมัดระวังและดูแลสุขภาพ',
               size: 'xs', color: '#c5221f', wrap: true,
             },
           ],

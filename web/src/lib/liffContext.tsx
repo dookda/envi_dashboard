@@ -16,6 +16,13 @@ interface LiffContextValue {
 
 const LiffContext = createContext<LiffContextValue>({ profile: null, isReady: false, error: null });
 
+function resolveLiffId(): string {
+  const path = typeof window !== 'undefined' ? window.location.pathname : '';
+  if (path.includes('/admin'))   return process.env.NEXT_PUBLIC_LIFF_ID_ADMIN   ?? '';
+  if (path.includes('/account')) return process.env.NEXT_PUBLIC_LIFF_ID_ACCOUNT ?? '';
+  return process.env.NEXT_PUBLIC_LIFF_ID_DASHBOARD ?? '';
+}
+
 export function LiffProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<LiffProfile | null>(null);
   const [isReady, setIsReady] = useState(false);
@@ -24,9 +31,9 @@ export function LiffProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
+        const liffId = resolveLiffId();
         if (!liffId) {
-          setError('LIFF_ID not configured');
+          setError('LIFF ID not configured');
           setIsReady(true);
           return;
         }
@@ -36,7 +43,20 @@ export function LiffProvider({ children }: { children: ReactNode }) {
           liff.login({ redirectUri: window.location.href });
           return;
         }
-        setProfile(await liff.getProfile());
+        const p = await liff.getProfile();
+        setProfile(p);
+
+        // Auto-save userId to subscriber list
+        await fetch('/air/api/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: p.userId,
+            displayName: p.displayName,
+            pictureUrl: p.pictureUrl,
+          }),
+        }).catch(() => {});
+
         setIsReady(true);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'LIFF init failed');

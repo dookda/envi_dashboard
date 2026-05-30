@@ -7,13 +7,11 @@ const host = process.env.APP_HOST ?? 'http://localhost:3000';
 const nextConfig: NextConfig = {
   basePath: base,
   env: {
-    // Baked into the client bundle at build time.
-    NEXTAUTH_URL: process.env.NEXTAUTH_URL ?? `${host}${base}/api/auth`,
-    NEXT_PUBLIC_AUTH_REDIRECT: process.env.NEXT_PUBLIC_AUTH_REDIRECT ?? `${base}/dashboard`,
-    NEXT_PUBLIC_LOGIN_URL: `${base}/login`,
     NEXT_PUBLIC_BASE_PATH: base,
     NEXT_PUBLIC_LINE_NOTIFY_CONFIGURED: process.env.LINE_CHANNEL_ACCESS_TOKEN ? 'true' : 'false',
-    NEXT_PUBLIC_LIFF_ID: process.env.LIFF_ID ?? '',
+    NEXT_PUBLIC_LIFF_ID_DASHBOARD: process.env.LIFF_ID_DASHBOARD ?? '',
+    NEXT_PUBLIC_LIFF_ID_ACCOUNT:   process.env.LIFF_ID_ACCOUNT   ?? '',
+    NEXT_PUBLIC_LIFF_ID_ADMIN:     process.env.LIFF_ID_ADMIN     ?? '',
   },
 };
 
