@@ -41,7 +41,7 @@ export default function Home() {
           <div className="p-3 bg-white rounded-2xl border border-border shadow-sm">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={`${process.env.NEXT_PUBLIC_BASE_PATH}/line-qr.png`}
+              src={`${process.env.NEXT_PUBLIC_BASE_PATH}/231hohun.png`}
               alt="LINE OA QR Code"
               width={200}
               height={200}
