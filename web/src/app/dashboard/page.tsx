@@ -197,19 +197,22 @@ export default function DashboardPage() {
           {profile && (
             <Link
               href="/account"
-              className="flex items-center gap-2 px-2 py-1 rounded-full bg-[#f1f3f4] dark:bg-[#303134] hover:bg-[#e8eaed] dark:hover:bg-[#3c4043] transition-colors"
+              className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-[#f1f3f4] dark:bg-[#303134] hover:bg-[#e8eaed] dark:hover:bg-[#3c4043] transition-colors"
             >
               {profile.pictureUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={profile.pictureUrl} alt={profile.displayName} className="h-5 w-5 rounded-full" />
+                <img src={profile.pictureUrl} alt={profile.displayName} className="h-8 w-8 rounded-full ring-2 ring-[#06C755]/40" />
               ) : (
-                <div className="h-5 w-5 rounded-full bg-[#06C755] flex items-center justify-center text-white text-[10px] font-bold">
+                <div className="h-8 w-8 rounded-full bg-[#06C755] flex items-center justify-center text-white text-sm font-bold ring-2 ring-[#06C755]/40">
                   {profile.displayName[0]}
                 </div>
               )}
-              <span className="text-xs font-medium text-[#202124] dark:text-[#e8eaed] hidden sm:block">
-                {profile.displayName}
-              </span>
+              <div className="flex flex-col leading-tight">
+                <span className="text-[10px] text-[#5f6368] dark:text-[#9aa0a6]">สวัสดี</span>
+                <span className="text-xs font-semibold text-[#202124] dark:text-[#e8eaed] max-w-[120px] truncate">
+                  {profile.displayName}
+                </span>
+              </div>
             </Link>
           )}
         </div>
