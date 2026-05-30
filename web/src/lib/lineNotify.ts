@@ -74,22 +74,6 @@ function buildMessages(payload: AlertPayload) {
                 { type: 'text', text: now, size: 'sm', flex: 3, wrap: true },
               ],
             },
-            ...(payload.temperature != null || payload.windSpeed != null ? [{
-              type: 'box', layout: 'baseline', spacing: 'sm',
-              contents: [
-                { type: 'text', text: '🌡️ สภาพอากาศ', color: '#5f6368', size: 'sm', flex: 2 },
-                {
-                  type: 'text',
-                  text: [
-                    payload.temperature != null ? `${payload.temperature.toFixed(1)}°C` : null,
-                    payload.windSpeed != null
-                      ? `💨 ${payload.windSpeed.toFixed(1)} km/h${payload.windDirection != null ? ` (${degToCompass(payload.windDirection)})` : ''}`
-                      : null,
-                  ].filter(Boolean).join('  '),
-                  size: 'sm', flex: 3, wrap: true,
-                },
-              ],
-            }] : []),
             { type: 'separator' },
             {
               type: 'box', layout: 'horizontal', spacing: 'sm',
@@ -123,6 +107,38 @@ function buildMessages(payload: AlertPayload) {
                 },
               ],
             },
+            ...(payload.temperature != null || payload.windSpeed != null ? [{
+              type: 'box', layout: 'horizontal', spacing: 'sm',
+              contents: [
+                {
+                  type: 'box', layout: 'vertical', flex: 1,
+                  backgroundColor: '#fce8e6', cornerRadius: 'md', paddingAll: 'sm',
+                  contents: [
+                    { type: 'text', text: '🌡️ อุณหภูมิ', size: 'xs', color: '#c5221f', align: 'center' },
+                    { type: 'text', text: payload.temperature != null ? `${payload.temperature.toFixed(1)}` : '—', size: 'md', weight: 'bold', color: '#c5221f', align: 'center' },
+                    { type: 'text', text: '°C', size: 'xxs', color: '#5f6368', align: 'center' },
+                  ],
+                },
+                {
+                  type: 'box', layout: 'vertical', flex: 1,
+                  backgroundColor: '#e0f7fa', cornerRadius: 'md', paddingAll: 'sm',
+                  contents: [
+                    { type: 'text', text: '💨 ลม', size: 'xs', color: '#00838f', align: 'center' },
+                    { type: 'text', text: payload.windSpeed != null ? `${payload.windSpeed.toFixed(1)}` : '—', size: 'md', weight: 'bold', color: '#00838f', align: 'center' },
+                    { type: 'text', text: 'km/h', size: 'xxs', color: '#5f6368', align: 'center' },
+                  ],
+                },
+                {
+                  type: 'box', layout: 'vertical', flex: 1,
+                  backgroundColor: '#fff3e0', cornerRadius: 'md', paddingAll: 'sm',
+                  contents: [
+                    { type: 'text', text: '🧭 ทิศลม', size: 'xs', color: '#e65100', align: 'center' },
+                    { type: 'text', text: payload.windDirection != null ? degToCompass(payload.windDirection) : '—', size: 'md', weight: 'bold', color: '#e65100', align: 'center' },
+                    { type: 'text', text: payload.windDirection != null ? `${payload.windDirection.toFixed(0)}°` : '', size: 'xxs', color: '#5f6368', align: 'center' },
+                  ],
+                },
+              ],
+            }] : []),
             ...(isUnhealthy(payload.pm25, payload.pm10, payload.tsp) ? [{
               type: 'text',
               text: '⚠️ ค่าฝุ่นละอองเกินมาตรฐาน กรุณาระมัดระวังและดูแลสุขภาพ',
