@@ -1,4 +1,4 @@
-import { pm25Level, pm10Level, tspLevel, compositeLevel, getStatus } from './airQuality';
+import { pm25Level, pm10Level, tspLevel, compositeLevel, getStatus, isUnhealthy } from './airQuality';
 
 const LINE_MULTICAST_API = 'https://api.line.me/v2/bot/message/multicast';
 
@@ -99,11 +99,11 @@ function buildMessages(payload: AlertPayload) {
                 },
               ],
             },
-            {
+            ...(isUnhealthy(payload.pm25, payload.pm10, payload.tsp) ? [{
               type: 'text',
               text: '⚠️ ค่าฝุ่นละอองเกินมาตรฐาน กรุณาระมัดระวังและดูแลสุขภาพ',
               size: 'xs', color: '#c5221f', wrap: true,
-            },
+            }] : []),
           ],
         },
       },
