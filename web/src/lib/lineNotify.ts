@@ -107,7 +107,7 @@ function buildMessages(payload: AlertPayload) {
                 },
               ],
             },
-            ...(payload.temperature != null || payload.windSpeed != null ? [{
+            {
               type: 'box', layout: 'horizontal', spacing: 'sm',
               contents: [
                 {
@@ -115,7 +115,7 @@ function buildMessages(payload: AlertPayload) {
                   backgroundColor: '#fce8e6', cornerRadius: 'md', paddingAll: 'sm',
                   contents: [
                     { type: 'text', text: '🌡️ อุณหภูมิ', size: 'xs', color: '#c5221f', align: 'center' },
-                    { type: 'text', text: payload.temperature != null ? `${payload.temperature.toFixed(1)}` : '—', size: 'md', weight: 'bold', color: '#c5221f', align: 'center' },
+                    { type: 'text', text: payload.temperature != null ? payload.temperature.toFixed(1) : '—', size: 'md', weight: 'bold', color: '#c5221f', align: 'center' },
                     { type: 'text', text: '°C', size: 'xxs', color: '#5f6368', align: 'center' },
                   ],
                 },
@@ -124,7 +124,7 @@ function buildMessages(payload: AlertPayload) {
                   backgroundColor: '#e0f7fa', cornerRadius: 'md', paddingAll: 'sm',
                   contents: [
                     { type: 'text', text: '💨 ลม', size: 'xs', color: '#00838f', align: 'center' },
-                    { type: 'text', text: payload.windSpeed != null ? `${payload.windSpeed.toFixed(1)}` : '—', size: 'md', weight: 'bold', color: '#00838f', align: 'center' },
+                    { type: 'text', text: payload.windSpeed != null ? payload.windSpeed.toFixed(1) : '—', size: 'md', weight: 'bold', color: '#00838f', align: 'center' },
                     { type: 'text', text: 'km/h', size: 'xxs', color: '#5f6368', align: 'center' },
                   ],
                 },
@@ -138,7 +138,7 @@ function buildMessages(payload: AlertPayload) {
                   ],
                 },
               ],
-            }] : []),
+            },
             ...(isUnhealthy(payload.pm25, payload.pm10, payload.tsp) ? [{
               type: 'text',
               text: '⚠️ ค่าฝุ่นละอองเกินมาตรฐาน กรุณาระมัดระวังและดูแลสุขภาพ',
