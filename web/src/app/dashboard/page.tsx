@@ -54,30 +54,6 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [testAlertState, setTestAlertState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
-  const triggerAlert = useCallback(async (station: Station) => {
-    const r = station.latestReading;
-    if (!r) return;
-    try {
-      await fetch('/air/api/alert', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          stationId: station.id,
-          stationName: station.name,
-          stationCode: station.code,
-          pm25: r.pm25,
-          pm10: r.pm10,
-          tsp: r.tsp,
-          windSpeed: r.windSpeed,
-          windDirection: r.windDirection,
-          temperature: r.temperature,
-        }),
-      });
-    } catch {
-      // best-effort
-    }
-  }, []);
-
   const sendTestAlert = useCallback(async (station: Station) => {
     const r = station.latestReading;
     if (!r) return;
@@ -113,10 +89,6 @@ export default function DashboardPage() {
       setStations(data);
       if (data.length > 0 && !activeStationId) setActiveStationId(data[0].id);
       setError(null);
-      data.forEach(station => {
-        const r = station.latestReading;
-        if (r && isUnhealthy(r.pm25, r.pm10, r.tsp)) triggerAlert(station);
-      });
     } catch (err: unknown) {
       console.error(err);
       setError('Database connection error. Ensure Docker services are running.');
