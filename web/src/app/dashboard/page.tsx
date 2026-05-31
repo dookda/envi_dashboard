@@ -95,7 +95,7 @@ export default function DashboardPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeStationId, triggerAlert]);
+  }, [activeStationId]);
 
   const fetchReadings = useCallback(async (stationId: string) => {
     try {
