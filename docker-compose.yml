@@ -20,16 +20,6 @@ services:
       timeout: 5s
       retries: 5
 
-  mock-service:
-    build: ./mock-service
-    container_name: envi_mock_service
-    restart: always
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/envi_db
-    depends_on:
-      db:
-        condition: service_healthy
-
   web:
     build: ./web
     container_name: envi_web
@@ -49,6 +39,8 @@ services:
       LIFF_ID_DASHBOARD: ${LIFF_ID_DASHBOARD}
       LIFF_ID_ACCOUNT: ${LIFF_ID_ACCOUNT}
       LIFF_ID_ADMIN: ${LIFF_ID_ADMIN}
+      APP_KEY: ${APP_KEY}
+      APP_SECRET: ${APP_SECRET}
     depends_on:
       db:
         condition: service_healthy
