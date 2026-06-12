@@ -64,7 +64,7 @@ function buildMessages(payload: AlertPayload) {
               type: 'box', layout: 'baseline', spacing: 'sm',
               contents: [
                 { type: 'text', text: '📍 สถานี', color: '#5f6368', size: 'sm', flex: 2 },
-                { type: 'text', text: `${payload.stationName} (${payload.stationCode})`, size: 'sm', weight: 'bold', flex: 3, wrap: true },
+                { type: 'text', text: payload.stationCode, size: 'sm', weight: 'bold', flex: 3, wrap: true },
               ],
             },
             {
