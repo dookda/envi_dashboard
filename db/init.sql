@@ -63,8 +63,8 @@ ON CONFLICT ("id") DO NOTHING;
 INSERT INTO "Config" ("key", "value", "updatedAt")
 VALUES
     ('alert.enabled',  'true',  NOW()),
-    ('alert.pm25',     '37.4',  NOW()),
-    ('alert.pm10',     '99',    NOW()),
-    ('alert.tsp',      '199',   NOW()),
+    ('alert.pm25',     '37.5',  NOW()),
+    ('alert.pm10',     '100',   NOW()),
+    ('alert.tsp',      '200',   NOW()),
     ('alert.cooldown', '30',    NOW())
 ON CONFLICT ("key") DO NOTHING;

@@ -17,19 +17,19 @@ const LEVELS: Record<AQLevel, AQStatus> = {
 
 export function pm25Level(v: number): AQLevel {
   if (v <= 20)   return 'good';
-  if (v <= 37.4) return 'moderate';
+  if (v <= 37.5) return 'moderate';
   return 'unhealthy';
 }
 
 export function pm10Level(v: number): AQLevel {
   if (v <= 50)  return 'good';
-  if (v <= 99)  return 'moderate';
+  if (v <= 100) return 'moderate';
   return 'unhealthy';
 }
 
 export function tspLevel(v: number): AQLevel {
   if (v <= 100) return 'good';
-  if (v <= 199) return 'moderate';
+  if (v <= 200) return 'moderate';
   return 'unhealthy';
 }
 

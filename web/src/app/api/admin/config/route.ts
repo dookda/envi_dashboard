@@ -5,9 +5,9 @@ export const dynamic = 'force-dynamic';
 
 const DEFAULTS = {
   'alert.enabled':  'true',
-  'alert.pm25':     '37.4',
-  'alert.pm10':     '99',
-  'alert.tsp':      '199',
+  'alert.pm25':     '37.5',
+  'alert.pm10':     '100',
+  'alert.tsp':      '200',
   'alert.cooldown': '30',
 };
 
