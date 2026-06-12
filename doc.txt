@@ -1,0 +1,9 @@
+Code,	ความหมาย,	หน่วย
+a34002,	PM2.5,	µg/m³
+a34004,	PM10,	µg/m³
+a34001,	TSP,	µg/m³
+a01001,	ความเร็วลม (Wind Speed),	m/s
+a01002,	ทิศทางลม (Wind Direction),	°
+a01007,	ปริมาณฝน (Rainfall),	mm
+a01008,	ความชื้น (Humidity),	%
+a01006,	ความดันอากาศ (Pressure),	hPa

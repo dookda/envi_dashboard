@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { fetchStationReadings, DataType } from '@/lib/enviApi';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 /**
  * POST /api/readings/sync
@@ -38,6 +39,17 @@ export async function POST(request: NextRequest) {
                 const reading = await fetchStationReadings(station.code, tp);
 
                 if (!reading) {
+                    results.push({ station: station.name, status: 'no_data' });
+                    continue;
+                }
+
+                // Skip if device hasn't reported a new reading since the last stored one
+                const last = await prisma.reading.findFirst({
+                    where: { stationId: station.id },
+                    orderBy: { timestamp: 'desc' },
+                    select: { timestamp: true },
+                });
+                if (last && last.timestamp.getTime() === reading.timestamp.getTime()) {
                     results.push({ station: station.name, status: 'no_data' });
                     continue;
                 }

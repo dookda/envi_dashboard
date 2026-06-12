@@ -8,7 +8,7 @@ const APP_SECRET = process.env.APP_SECRET!;
 export const CODE_MAP: Record<string, keyof EnviReading> = {
     a34002: 'pm25',
     a34004: 'pm10',
-    a19001: 'tsp',
+    a34001: 'tsp',
     a01001: 'windSpeed',
     a01002: 'windDirection',
     a01003: 'temperature',
@@ -64,6 +64,7 @@ export async function fetchStationReadings(
         method: 'POST',
         headers: headers as Record<string, string>,
         cache: 'no-store',
+        signal: AbortSignal.timeout(8000),
     });
 
     if (!res.ok) {
@@ -75,7 +76,7 @@ export async function fetchStationReadings(
     if (!body?.Data?.length) return null;
 
     // Merge all returned codes into a partial reading
-    const partial: Partial<Record<keyof EnviReading, number>> & { timestamp?: Date } = {
+    const partial: Partial<Record<Exclude<keyof EnviReading, 'timestamp'>, number>> & { timestamp?: Date } = {
         timestamp: body.Time ? new Date(body.Time) : new Date(),
     };
 

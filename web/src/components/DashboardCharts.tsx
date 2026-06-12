@@ -2,6 +2,8 @@
 
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine } from 'recharts';
 
+export type Range = '1h' | '6h' | '24h' | '3d' | '7d';
+
 interface Reading {
   id: string;
   pm25: number;
@@ -16,6 +18,28 @@ interface Reading {
 interface DashboardChartsProps {
   readings: Reading[];
   stationName: string;
+  range: Range;
+  onRangeChange: (r: Range) => void;
+}
+
+const RANGES: { value: Range; label: string }[] = [
+  { value: '1h',  label: '1H'  },
+  { value: '6h',  label: '6H'  },
+  { value: '24h', label: '24H' },
+  { value: '3d',  label: '3D'  },
+  { value: '7d',  label: '7D'  },
+];
+
+function formatTick(ts: string, range: Range): string {
+  const d = new Date(ts);
+  if (range === '1h' || range === '6h') {
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  if (range === '24h') {
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' +
+         d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
 function degToCompass(deg: number): string {
@@ -23,10 +47,10 @@ function degToCompass(deg: number): string {
   return dirs[Math.round(deg / 45) % 8];
 }
 
-export default function DashboardCharts({ readings, stationName }: DashboardChartsProps) {
+export default function DashboardCharts({ readings, stationName, range, onRangeChange }: DashboardChartsProps) {
   const chartData = readings.map(r => ({
     ...r,
-    formattedTime: new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+    tick: formatTick(r.timestamp, range),
   }));
 
   const avg = (key: keyof Omit<Reading, 'id' | 'timestamp'>) => {
@@ -60,7 +84,7 @@ export default function DashboardCharts({ readings, stationName }: DashboardChar
         <div className="flex-1 w-full min-h-0">
           {chartData.length === 0 ? (
             <div className="w-full h-full flex items-center justify-center text-xs text-[#5f6368]">
-              Waiting for real-time readings...
+              No data for this period yet
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
@@ -73,10 +97,11 @@ export default function DashboardCharts({ readings, stationName }: DashboardChar
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e8eaed" opacity={0.8} />
                 <XAxis
-                  dataKey="formattedTime"
+                  dataKey="tick"
                   tickLine={false}
                   axisLine={false}
                   tick={{ fill: '#9aa0a6', fontSize: 10 }}
+                  interval="preserveStartEnd"
                 />
                 <YAxis
                   tickLine={false}
@@ -91,7 +116,7 @@ export default function DashboardCharts({ readings, stationName }: DashboardChar
                     borderRadius: '1rem',
                     fontSize: '11px',
                     color: '#202124',
-                    boxShadow: '0 1px 3px rgb(0 0 0 / 0.1)'
+                    boxShadow: '0 1px 3px rgb(0 0 0 / 0.1)',
                   }}
                   formatter={(value) => [
                     typeof value === 'number'
@@ -125,6 +150,28 @@ export default function DashboardCharts({ readings, stationName }: DashboardChar
 
   return (
     <div className="space-y-5">
+      {/* Range selector */}
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6]">
+          {stationName} — {range === '24h' || range === '3d' || range === '7d' ? 'Hourly averages' : 'Real-time readings'}
+        </p>
+        <div className="flex items-center gap-1 bg-[#f1f3f4] dark:bg-[#303134] p-1 rounded-2xl">
+          {RANGES.map(r => (
+            <button
+              key={r.value}
+              onClick={() => onRangeChange(r.value)}
+              className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all ${
+                range === r.value
+                  ? 'bg-white dark:bg-[#2d2e30] text-[#1a73e8] shadow-sm'
+                  : 'text-[#5f6368] dark:text-[#9aa0a6] hover:text-[#202124] dark:hover:text-[#e8eaed]'
+              }`}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Dust particles */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {renderChart('tsp',  'TSP Trend',   '#9c27b0', 'colorTsp',   'µg/m³')}
@@ -133,9 +180,9 @@ export default function DashboardCharts({ readings, stationName }: DashboardChar
       </div>
       {/* Weather */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {renderChart('temperature',   'Temperature',     '#ea4335', 'colorTemp',  '°C')}
-        {renderChart('windSpeed',     'Wind Speed',      '#00bcd4', 'colorWind',  'km/h')}
-        {renderChart('windDirection', 'Wind Direction',  '#ff9800', 'colorWDir',  '°', degToCompass)}
+        {renderChart('temperature',   'Temperature',    '#ea4335', 'colorTemp',  '°C')}
+        {renderChart('windSpeed',     'Wind Speed',     '#00bcd4', 'colorWind',  'm/s')}
+        {renderChart('windDirection', 'Wind Direction', '#ff9800', 'colorWDir',  '°', degToCompass)}
       </div>
     </div>
   );

@@ -2,18 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
-import { readingStatus, isUnhealthy } from '@/lib/airQuality';
+import { readingStatus } from '@/lib/airQuality';
 import {
-  MapPin,
-  BarChart3,
-  RefreshCw,
-  AlertCircle,
-  BellRing,
-  CheckCircle2,
-  Settings
+  MapPin, RefreshCw, AlertCircle, Settings, Pencil,
 } from 'lucide-react';
-import DashboardCharts from '@/components/DashboardCharts';
 import FaceIcon from '@/components/FaceIcon';
 
 interface Reading {
@@ -29,106 +21,42 @@ interface Reading {
 
 interface Station {
   id: string;
-  name: string;
   code: string;
+  iotCard: string;
   latitude: number;
   longitude: number;
   latestReading: Reading | null;
 }
 
-const MapComponent = dynamic(() => import('@/components/MapComponent'), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-full min-h-[450px] flex flex-col items-center justify-center bg-card text-slate-400 rounded-2xl border border-border">
-      <RefreshCw className="h-8 w-8 animate-spin mb-2" />
-      <span className="text-sm font-medium">Loading interactive map...</span>
-    </div>
-  ),
-});
+function degToCompass(deg: number): string {
+  const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  return dirs[Math.round(deg / 45) % 8];
+}
 
 export default function DashboardPage() {
   const [stations, setStations] = useState<Station[]>([]);
-  const [activeStationId, setActiveStationId] = useState<string | null>(null);
-  const [readings, setReadings] = useState<Reading[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [testAlertState, setTestAlertState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
-
-  const sendTestAlert = useCallback(async (station: Station) => {
-    const r = station.latestReading;
-    if (!r) return;
-    setTestAlertState('sending');
-    try {
-      const res = await fetch('/air/api/alert/test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          stationId: station.id,
-          stationName: station.name,
-          stationCode: station.code,
-          pm25: r.pm25,
-          pm10: r.pm10,
-          tsp: r.tsp,
-          windSpeed: r.windSpeed,
-          windDirection: r.windDirection,
-          temperature: r.temperature,
-        }),
-      });
-      setTestAlertState(res.ok ? 'sent' : 'error');
-    } catch {
-      setTestAlertState('error');
-    }
-    setTimeout(() => setTestAlertState('idle'), 3000);
-  }, []);
 
   const fetchStations = useCallback(async () => {
     try {
-      const response = await fetch('/air/api/stations');
-      if (!response.ok) throw new Error('Failed to fetch stations');
-      const data: Station[] = await response.json();
-      setStations(data);
-      if (data.length > 0 && !activeStationId) setActiveStationId(data[0].id);
+      await fetch('/air/api/readings/sync', { method: 'POST' }).catch(() => {});
+      const res = await fetch('/air/api/stations');
+      if (!res.ok) throw new Error('Failed to fetch stations');
+      setStations(await res.json());
       setError(null);
-    } catch (err: unknown) {
-      console.error(err);
+    } catch {
       setError('Database connection error. Ensure Docker services are running.');
     } finally {
       setIsLoading(false);
-    }
-  }, [activeStationId]);
-
-  const fetchReadings = useCallback(async (stationId: string) => {
-    try {
-      const response = await fetch(`/air/api/readings?stationId=${stationId}`);
-      if (!response.ok) throw new Error('Failed to fetch historical readings');
-      setReadings(await response.json());
-    } catch (err) {
-      console.error(err);
     }
   }, []);
 
   useEffect(() => {
     fetchStations();
-    const interval = setInterval(fetchStations, 5000);
-    return () => clearInterval(interval);
+    const t = setInterval(fetchStations, 60000);
+    return () => clearInterval(t);
   }, [fetchStations]);
-
-  useEffect(() => {
-    if (!activeStationId) return;
-    fetchReadings(activeStationId);
-    const interval = setInterval(() => fetchReadings(activeStationId), 5000);
-    return () => clearInterval(interval);
-  }, [activeStationId, fetchReadings]);
-
-  const activeStation = stations.find(s => s.id === activeStationId);
-
-  const getStationStatus = (r: Station['latestReading']) => {
-    const s = readingStatus(r?.pm25, r?.pm10, r?.tsp);
-    return {
-      label: s.label,
-      color: `text-[${s.textColor}] bg-[${s.bgColor}]`,
-    };
-  };
 
   return (
     <div className="min-h-screen flex flex-col p-4 md:p-8 max-w-7xl mx-auto space-y-5">
@@ -152,6 +80,13 @@ export default function DashboardPage() {
             </div>
           )}
           <Link
+            href="/stations"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f1f3f4] dark:bg-[#303134] text-[#5f6368] text-xs font-medium hover:bg-[#e8eaed] transition-colors"
+          >
+            <MapPin className="h-3.5 w-3.5" />
+            <span className="hidden sm:block">Stations</span>
+          </Link>
+          <Link
             href="/admin"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f1f3f4] dark:bg-[#303134] text-[#5f6368] text-xs font-medium hover:bg-[#e8eaed] transition-colors"
           >
@@ -171,143 +106,103 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Selected Station Summary & Charts */}
-      {activeStation && (
-        <section className="space-y-5">
-          <div className="bg-card px-6 py-4 rounded-3xl border border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <FaceIcon
-                level={readingStatus(activeStation.latestReading?.pm25, activeStation.latestReading?.pm10, activeStation.latestReading?.tsp).level}
-                size={48}
-              />
-              <div>
-                <h3 className="font-semibold text-[#202124] dark:text-[#e8eaed]">{activeStation.name} Telemetry</h3>
-                <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6]">{activeStation.latitude.toFixed(4)}, {activeStation.longitude.toFixed(4)}</p>
-              </div>
-            </div>
-
-            {activeStation.latestReading && (
-              <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#e8f0fe]">
-                  <span className="w-2 h-2 rounded-full bg-[#1a73e8]" />
-                  <span className="text-[#1a73e8]">PM2.5: {activeStation.latestReading.pm25} µg/m³</span>
-                </div>
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#e6f4ea]">
-                  <span className="w-2 h-2 rounded-full bg-[#34a853]" />
-                  <span className="text-[#137333]">PM10: {activeStation.latestReading.pm10} µg/m³</span>
-                </div>
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#fef3c7]">
-                  <span className="w-2 h-2 rounded-full bg-[#fbbc04]" />
-                  <span className="text-[#b45309]">TSP: {activeStation.latestReading.tsp} µg/m³</span>
-                </div>
-                <button
-                  onClick={() => sendTestAlert(activeStation)}
-                  disabled={testAlertState !== 'idle'}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors disabled:opacity-60 cursor-pointer bg-[#06C755] hover:bg-[#05b34c] text-white disabled:cursor-not-allowed"
-                >
-                  {testAlertState === 'sending' && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
-                  {testAlertState === 'sent'    && <CheckCircle2 className="h-3.5 w-3.5" />}
-                  {testAlertState === 'error'   && <AlertCircle className="h-3.5 w-3.5" />}
-                  {testAlertState === 'idle'    && <BellRing className="h-3.5 w-3.5" />}
-                  {testAlertState === 'sending' ? 'Sending…' :
-                   testAlertState === 'sent'    ? 'Sent!' :
-                   testAlertState === 'error'   ? 'Failed' : 'Test Alert'}
-                </button>
-              </div>
-            )}
+      {/* Station grid */}
+      <div className="bg-card px-5 py-5 rounded-3xl border border-border">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-[#1a73e8]" />
+            <h3 className="font-semibold text-sm text-[#202124] dark:text-[#e8eaed]">Observation Stations</h3>
           </div>
+          <span className="text-xs text-[#5f6368] bg-[#f1f3f4] dark:bg-[#303134] px-2 py-0.5 rounded-full">
+            {stations.length} Registered
+          </span>
+        </div>
 
-          <DashboardCharts readings={readings} stationName={activeStation.name} />
-        </section>
-      )}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <RefreshCw className="h-6 w-6 animate-spin text-[#1a73e8]" />
+          </div>
+        ) : stations.length === 0 ? (
+          <div className="flex items-center justify-center py-16 text-sm text-[#5f6368]">
+            No stations registered.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {stations.map(station => {
+              const status = readingStatus(station.latestReading?.pm25, station.latestReading?.pm10, station.latestReading?.tsp);
+              const r = station.latestReading;
 
-      {/* Main Dashboard Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+              return (
+                <div key={station.id} className="relative group rounded-2xl border border-border hover:border-[#1a73e8] transition-colors bg-[#f8f9fa] dark:bg-[#303134]/40">
+                  {/* Edit shortcut */}
+                  <Link
+                    href={`/stations/${station.id}/edit`}
+                    className="absolute top-3 right-3 p-1.5 rounded-xl opacity-0 group-hover:opacity-100 hover:bg-[#e8f0fe] text-[#9aa0a6] hover:text-[#1a73e8] transition-all z-10"
+                    title="Edit station"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Link>
 
-        {/* Station list */}
-        <div className="lg:col-span-1 flex flex-col space-y-4">
-          <div className="bg-card px-5 py-5 rounded-3xl border border-border flex flex-col flex-1 h-[450px]">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-[#1a73e8]" />
-                <h3 className="font-semibold text-sm text-[#202124] dark:text-[#e8eaed]">Observation Stations</h3>
-              </div>
-              <span className="text-xs text-[#5f6368] bg-[#f1f3f4] dark:bg-[#303134] px-2 py-0.5 rounded-full">{stations.length} Registered</span>
-            </div>
+                  {/* Card body → navigates to detail */}
+                  <Link href={`/detail/${station.id}`} className="flex flex-col gap-3 p-4 rounded-2xl">
+                    <div className="flex items-center gap-3 pr-7">
+                      <FaceIcon level={status.level} size={40} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-[#202124] dark:text-[#e8eaed] font-mono truncate">{station.code}</p>
+                        <span
+                          className="inline-block mt-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                          style={{ background: status.bgColor, color: status.textColor }}
+                        >
+                          {status.label}
+                        </span>
+                      </div>
+                    </div>
 
-            <div className="flex-1 overflow-y-auto space-y-2 pr-1">
-              {isLoading ? (
-                <div className="h-full flex items-center justify-center">
-                  <RefreshCw className="h-6 w-6 animate-spin text-[#1a73e8]" />
-                </div>
-              ) : stations.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-sm text-[#5f6368]">No stations registered.</div>
-              ) : (
-                stations.map(station => {
-                  const status = getStationStatus(station.latestReading);
-                  const isActive = station.id === activeStationId;
-
-                  return (
-                    <button
-                      key={station.id}
-                      onClick={() => setActiveStationId(station.id)}
-                      className={`w-full text-left p-3.5 rounded-2xl transition-all duration-150 flex flex-col gap-2 ${
-                        isActive ? 'bg-[#f1f3f4] dark:bg-[#303134]' : 'bg-transparent hover:bg-[#f8f9fa] dark:hover:bg-[#303134]/60'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <FaceIcon
-                          level={readingStatus(station.latestReading?.pm25, station.latestReading?.pm10, station.latestReading?.tsp).level}
-                          size={36}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-sm text-[#202124] dark:text-[#e8eaed] line-clamp-1">{station.name}</h4>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className="text-xs text-[#5f6368]">{station.code}</span>
-                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${status.color}`}>
-                              {status.label}
-                            </span>
-                          </div>
+                    {r ? (
+                      <div className="grid grid-cols-3 gap-1.5 text-center">
+                        <div className="bg-[#e8f0fe] p-1.5 rounded-xl">
+                          <span className="block text-[9px] font-medium text-[#1a73e8]">PM2.5</span>
+                          <span className="text-xs font-semibold text-[#1a73e8]">{r.pm25}</span>
+                        </div>
+                        <div className="bg-[#e6f4ea] p-1.5 rounded-xl">
+                          <span className="block text-[9px] font-medium text-[#137333]">PM10</span>
+                          <span className="text-xs font-semibold text-[#137333]">{r.pm10}</span>
+                        </div>
+                        <div className="bg-[#fef3c7] p-1.5 rounded-xl">
+                          <span className="block text-[9px] font-medium text-[#b45309]">TSP</span>
+                          <span className="text-xs font-semibold text-[#b45309]">{r.tsp}</span>
+                        </div>
+                        <div className="bg-[#fce8e6] p-1.5 rounded-xl">
+                          <span className="block text-[9px] font-medium text-[#c5221f]">Temp</span>
+                          <span className="text-xs font-semibold text-[#c5221f]">{r.temperature}°C</span>
+                        </div>
+                        <div className="bg-[#e0f7fa] p-1.5 rounded-xl">
+                          <span className="block text-[9px] font-medium text-[#00838f]">Wind</span>
+                          <span className="text-xs font-semibold text-[#00838f]">{r.windSpeed} m/s</span>
+                        </div>
+                        <div className="bg-[#fff3e0] p-1.5 rounded-xl">
+                          <span className="block text-[9px] font-medium text-[#e65100]">Dir</span>
+                          <span className="text-xs font-semibold text-[#e65100]">{degToCompass(r.windDirection)}</span>
                         </div>
                       </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 text-xs text-[#fbbc04] italic">
+                        <RefreshCw className="h-3 w-3 animate-spin" />
+                        Waiting for telemetry…
+                      </div>
+                    )}
 
-                      {station.latestReading ? (
-                        <div className="grid grid-cols-3 gap-1.5 mt-0.5 text-center">
-                          <div className="bg-[#e8f0fe] p-1.5 rounded-xl">
-                            <span className="block text-[9px] font-medium text-[#1a73e8]">PM2.5</span>
-                            <span className="text-xs font-semibold text-[#1a73e8]">{station.latestReading.pm25}</span>
-                          </div>
-                          <div className="bg-[#e6f4ea] p-1.5 rounded-xl">
-                            <span className="block text-[9px] font-medium text-[#137333]">PM10</span>
-                            <span className="text-xs font-semibold text-[#137333]">{station.latestReading.pm10}</span>
-                          </div>
-                          <div className="bg-[#fef3c7] p-1.5 rounded-xl">
-                            <span className="block text-[9px] font-medium text-[#b45309]">TSP</span>
-                            <span className="text-xs font-semibold text-[#b45309]">{station.latestReading.tsp}</span>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-xs text-[#fbbc04] italic mt-0.5 flex items-center gap-1">
-                          <RefreshCw className="h-3 w-3 animate-spin" />
-                          Waiting for telemetry...
-                        </div>
-                      )}
-                    </button>
-                  );
-                })
-              )}
-            </div>
+                    {r && (
+                      <p className="text-[10px] text-[#9aa0a6] text-right">
+                        {new Date(r.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    )}
+                  </Link>
+                </div>
+              );
+            })}
           </div>
-        </div>
-
-        {/* Live Map */}
-        <div className="lg:col-span-2 h-[450px]">
-          <MapComponent
-            stations={stations}
-            activeStationId={activeStationId}
-            onSelectStation={(id) => setActiveStationId(id)}
-          />
-        </div>
+        )}
       </div>
 
     </div>

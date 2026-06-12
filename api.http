@@ -1,0 +1,100 @@
+### ════════════════════════════════════════════════════════
+### Environmental Monitoring IoT Cloud Platform
+### Base: http://47.236.90.227:57200
+### Docs: http://47.236.90.227:8200/api-doc/
+###
+### ⚠️  Auth headers expire — regenerate with:
+###    node -e "
+###      const { createHash } = require('crypto');
+###      const ts = Date.now().toString();
+###      const rand = Math.random().toString(36).slice(2,12).toUpperCase();
+###      const sig = createHash('sha1').update(ts+'_'+rand+'_'+'e95054376d0241ef8a667db24745bbea').digest('hex').toUpperCase();
+###      console.log('timestamp:',ts,'\nrand:',rand,'\nsignature:',sig);
+###    "
+### ════════════════════════════════════════════════════════
+
+@iotBase   = http://47.236.90.227:57200
+@appkey    = 02a6c51343ed4552ad59e81161d20840
+
+# ── Regenerate these three values when requests return 401/403 ──
+@timestamp = 1781223343008
+@rand      = LKVSYZHFFN
+@signature = 8EA52ABCE253DFF6E5F0E2FF1B0204EB36347C5D
+
+###
+# ─────────────────────────────────────────────────────────
+# Real-time data (tp=2011)
+# ─────────────────────────────────────────────────────────
+
+### Station 1 — 00402425072500067267
+POST {{iotBase}}/api/hj212/querystatus.do?sn=00402425072500067267&tp=2011
+appkey: {{appkey}}
+timestamp: {{timestamp}}
+rand: {{rand}}
+signature: {{signature}}
+
+###
+### Station 2 — 00402425091300069457
+POST {{iotBase}}/api/hj212/querystatus.do?sn=00402425091300069457&tp=2011
+appkey: {{appkey}}
+timestamp: {{timestamp}}
+rand: {{rand}}
+signature: {{signature}}
+
+###
+### Station 3 — 00402425091300119215
+POST {{iotBase}}/api/hj212/querystatus.do?sn=00402425091300119215&tp=2011
+appkey: {{appkey}}
+timestamp: {{timestamp}}
+rand: {{rand}}
+signature: {{signature}}
+
+###
+### Station 4 — 00402425091300296510
+POST {{iotBase}}/api/hj212/querystatus.do?sn=00402425091300296510&tp=2011
+appkey: {{appkey}}
+timestamp: {{timestamp}}
+rand: {{rand}}
+signature: {{signature}}
+
+###
+### Station 5 — 00402425091300199547
+POST {{iotBase}}/api/hj212/querystatus.do?sn=00402425091300199547&tp=2011
+appkey: {{appkey}}
+timestamp: {{timestamp}}
+rand: {{rand}}
+signature: {{signature}}
+
+###
+### Station 6 — 00402425091300027158
+POST {{iotBase}}/api/hj212/querystatus.do?sn=00402425091300027158&tp=2011
+appkey: {{appkey}}
+timestamp: {{timestamp}}
+rand: {{rand}}
+signature: {{signature}}
+
+###
+# ─────────────────────────────────────────────────────────
+# Minute data (tp=2051) — Station 1
+# ─────────────────────────────────────────────────────────
+POST {{iotBase}}/api/hj212/querystatus.do?sn=00402425072500067267&tp=2051
+appkey: {{appkey}}
+timestamp: {{timestamp}}
+rand: {{rand}}
+signature: {{signature}}
+
+###
+# Hourly data (tp=2061) — Station 1
+POST {{iotBase}}/api/hj212/querystatus.do?sn=00402425072500067267&tp=2061
+appkey: {{appkey}}
+timestamp: {{timestamp}}
+rand: {{rand}}
+signature: {{signature}}
+
+###
+# Daily data (tp=2031) — Station 1
+POST {{iotBase}}/api/hj212/querystatus.do?sn=00402425072500067267&tp=2031
+appkey: {{appkey}}
+timestamp: {{timestamp}}
+rand: {{rand}}
+signature: {{signature}}

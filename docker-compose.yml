@@ -45,5 +45,18 @@ services:
       db:
         condition: service_healthy
 
+  cron:
+    image: alpine:3.19
+    container_name: envi_cron
+    restart: always
+    depends_on:
+      web:
+        condition: service_started
+    command: >
+      sh -c "echo 'Cron started — syncing every 60s'; while true; do
+        wget -qO- --header='Content-Type: application/json' --post-data='{}' http://web:3000/air/api/readings/sync && echo ' synced' || echo ' sync failed';
+        sleep 60;
+      done"
+
 volumes:
   postgres_data:

@@ -18,8 +18,8 @@ export async function GET() {
 
     const stationsWithLatest = stations.map(station => ({
       id: station.id,
-      name: station.name,
       code: station.code,
+      iotCard: station.iotCard,
       latitude: station.latitude,
       longitude: station.longitude,
       latestReading: station.readings[0] || null,
