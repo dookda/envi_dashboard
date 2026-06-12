@@ -46,6 +46,7 @@ export default function DetailPage({ params }: { params: Promise<{ id: string }>
   const [readings, setReadings] = useState<Reading[]>([]);
   const [range, setRange] = useState<Range>('1h');
   const [alertState, setAlertState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [alertResult, setAlertResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const fetchStation = useCallback(async () => {
@@ -85,6 +86,7 @@ export default function DetailPage({ params }: { params: Promise<{ id: string }>
     if (!station?.latestReading) return;
     const r = station.latestReading;
     setAlertState('sending');
+    setAlertResult(null);
     try {
       const res = await fetch('/air/api/alert/test', {
         method: 'POST',
@@ -97,9 +99,12 @@ export default function DetailPage({ params }: { params: Promise<{ id: string }>
           windSpeed: r.windSpeed, windDirection: r.windDirection, temperature: r.temperature,
         }),
       });
+      const data = await res.json();
       setAlertState(res.ok ? 'sent' : 'error');
-    } catch {
+      setAlertResult(JSON.stringify(data, null, 2));
+    } catch (err: any) {
       setAlertState('error');
+      setAlertResult(err?.message ?? 'Network error');
     }
     setTimeout(() => setAlertState('idle'), 3000);
   }
@@ -178,6 +183,17 @@ export default function DetailPage({ params }: { params: Promise<{ id: string }>
           </div>
         )}
       </header>
+
+      {/* Alert result */}
+      {alertResult && (
+        <div className={`px-5 py-4 rounded-3xl border text-xs font-mono whitespace-pre-wrap break-all ${
+          alertState === 'error'
+            ? 'bg-[#fce8e6] border-[#f5c6c6] text-[#c5221f]'
+            : 'bg-[#e6f4ea] border-[#b7dfbf] text-[#137333]'
+        }`}>
+          {alertResult}
+        </div>
+      )}
 
       {/* Map */}
       <div className="h-[400px]">
