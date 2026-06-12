@@ -46,7 +46,6 @@ export default function DetailPage({ params }: { params: Promise<{ id: string }>
   const [readings, setReadings] = useState<Reading[]>([]);
   const [range, setRange] = useState<Range>('1h');
   const [alertState, setAlertState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
-  const [alertResult, setAlertResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const fetchStation = useCallback(async () => {
@@ -86,7 +85,6 @@ export default function DetailPage({ params }: { params: Promise<{ id: string }>
     if (!station?.latestReading) return;
     const r = station.latestReading;
     setAlertState('sending');
-    setAlertResult(null);
     try {
       const res = await fetch('/air/api/alert/test', {
         method: 'POST',
@@ -99,12 +97,9 @@ export default function DetailPage({ params }: { params: Promise<{ id: string }>
           windSpeed: r.windSpeed, windDirection: r.windDirection, temperature: r.temperature,
         }),
       });
-      const data = await res.json();
       setAlertState(res.ok ? 'sent' : 'error');
-      setAlertResult(JSON.stringify(data, null, 2));
-    } catch (err: any) {
+    } catch {
       setAlertState('error');
-      setAlertResult(err?.message ?? 'Network error');
     }
     setTimeout(() => setAlertState('idle'), 3000);
   }
@@ -136,7 +131,7 @@ export default function DetailPage({ params }: { params: Promise<{ id: string }>
     <div className="min-h-screen flex flex-col p-4 md:p-8 max-w-7xl mx-auto space-y-5">
 
       {/* Header */}
-      <header className="flex items-center justify-between bg-card px-6 py-4 rounded-3xl border border-border">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-card px-6 py-4 rounded-3xl border border-border">
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard"
@@ -156,44 +151,47 @@ export default function DetailPage({ params }: { params: Promise<{ id: string }>
         </div>
 
         {r && (
-          <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#e8f0fe]">
-              <span className="w-2 h-2 rounded-full bg-[#1a73e8]" />
-              <span className="text-[#1a73e8]">PM2.5: {r.pm25}</span>
+          <div className="flex flex-col gap-2 text-xs font-medium">
+            {/* Row 1: dust */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#e8f0fe]">
+                <span className="w-2 h-2 rounded-full bg-[#1a73e8]" />
+                <span className="text-[#1a73e8]">PM2.5: {r.pm25}</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#e6f4ea]">
+                <span className="w-2 h-2 rounded-full bg-[#34a853]" />
+                <span className="text-[#137333]">PM10: {r.pm10}</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#fef3c7]">
+                <span className="w-2 h-2 rounded-full bg-[#fbbc04]" />
+                <span className="text-[#b45309]">TSP: {r.tsp}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#e6f4ea]">
-              <span className="w-2 h-2 rounded-full bg-[#34a853]" />
-              <span className="text-[#137333]">PM10: {r.pm10}</span>
+            {/* Row 2: weather + alert button */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#fce8e6]">
+                <span className="w-2 h-2 rounded-full bg-[#ea4335]" />
+                <span className="text-[#c5221f]">{r.temperature}°C</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#e0f7fa]">
+                <span className="w-2 h-2 rounded-full bg-[#00acc1]" />
+                <span className="text-[#00838f]">{r.windSpeed} m/s</span>
+              </div>
+              <button
+                onClick={sendTestAlert}
+                disabled={alertState !== 'idle'}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors disabled:opacity-60 cursor-pointer bg-[#06C755] hover:bg-[#05b34c] text-white disabled:cursor-not-allowed ml-auto sm:ml-0"
+              >
+                {alertState === 'sending' && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
+                {alertState === 'sent'    && <CheckCircle2 className="h-3.5 w-3.5" />}
+                {alertState === 'error'   && <AlertCircle className="h-3.5 w-3.5" />}
+                {alertState === 'idle'    && <BellRing className="h-3.5 w-3.5" />}
+                {alertState === 'sending' ? 'Sending…' : alertState === 'sent' ? 'Sent!' : alertState === 'error' ? 'Failed' : 'Test Alert'}
+              </button>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#fef3c7]">
-              <span className="w-2 h-2 rounded-full bg-[#fbbc04]" />
-              <span className="text-[#b45309]">TSP: {r.tsp}</span>
-            </div>
-            <button
-              onClick={sendTestAlert}
-              disabled={alertState !== 'idle'}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors disabled:opacity-60 cursor-pointer bg-[#06C755] hover:bg-[#05b34c] text-white disabled:cursor-not-allowed"
-            >
-              {alertState === 'sending' && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
-              {alertState === 'sent'    && <CheckCircle2 className="h-3.5 w-3.5" />}
-              {alertState === 'error'   && <AlertCircle className="h-3.5 w-3.5" />}
-              {alertState === 'idle'    && <BellRing className="h-3.5 w-3.5" />}
-              {alertState === 'sending' ? 'Sending…' : alertState === 'sent' ? 'Sent!' : alertState === 'error' ? 'Failed' : 'Test Alert'}
-            </button>
           </div>
         )}
       </header>
-
-      {/* Alert result */}
-      {alertResult && (
-        <div className={`px-5 py-4 rounded-3xl border text-xs font-mono whitespace-pre-wrap break-all ${
-          alertState === 'error'
-            ? 'bg-[#fce8e6] border-[#f5c6c6] text-[#c5221f]'
-            : 'bg-[#e6f4ea] border-[#b7dfbf] text-[#137333]'
-        }`}>
-          {alertResult}
-        </div>
-      )}
 
       {/* Map */}
       <div className="h-[400px]">
