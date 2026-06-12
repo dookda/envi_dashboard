@@ -111,7 +111,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4 text-[#1a73e8]" />
-            <h3 className="font-semibold text-sm text-[#202124] dark:text-[#e8eaed]">Observation Stations</h3>
+            <h3 className="font-semibold text-sm text-[#202124] dark:text-[#e8eaed]">S.P.S.Consulting</h3>
           </div>
           <span className="text-xs text-[#5f6368] bg-[#f1f3f4] dark:bg-[#303134] px-2 py-0.5 rounded-full">
             {stations.length} Registered
