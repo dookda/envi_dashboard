@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { readingStatus } from '@/lib/airQuality';
+import { readingStatus, pm25Level, pm10Level, tspLevel, getStatus } from '@/lib/airQuality';
 import {
   MapPin, RefreshCw, AlertCircle, Settings, Pencil,
 } from 'lucide-react';
@@ -160,18 +160,25 @@ export default function DashboardPage() {
 
                     {r ? (
                       <div className="grid grid-cols-3 gap-1.5 text-center">
-                        <div className="bg-[#e8f0fe] p-1.5 rounded-xl">
-                          <span className="block text-[9px] font-medium text-[#1a73e8]">PM2.5</span>
-                          <span className="text-xs font-semibold text-[#1a73e8]">{r.pm25}</span>
-                        </div>
-                        <div className="bg-[#e6f4ea] p-1.5 rounded-xl">
-                          <span className="block text-[9px] font-medium text-[#137333]">PM10</span>
-                          <span className="text-xs font-semibold text-[#137333]">{r.pm10}</span>
-                        </div>
-                        <div className="bg-[#fef3c7] p-1.5 rounded-xl">
-                          <span className="block text-[9px] font-medium text-[#b45309]">TSP</span>
-                          <span className="text-xs font-semibold text-[#b45309]">{r.tsp}</span>
-                        </div>
+                        {(() => {
+                          const s25  = getStatus(pm25Level(r.pm25));
+                          const s10  = getStatus(pm10Level(r.pm10));
+                          const stsp = getStatus(tspLevel(r.tsp));
+                          return (<>
+                            <div className="p-1.5 rounded-xl" style={{ background: s25.bgColor }}>
+                              <span className="block text-[9px] font-medium" style={{ color: s25.textColor }}>PM2.5</span>
+                              <span className="text-xs font-semibold" style={{ color: s25.textColor }}>{r.pm25}</span>
+                            </div>
+                            <div className="p-1.5 rounded-xl" style={{ background: s10.bgColor }}>
+                              <span className="block text-[9px] font-medium" style={{ color: s10.textColor }}>PM10</span>
+                              <span className="text-xs font-semibold" style={{ color: s10.textColor }}>{r.pm10}</span>
+                            </div>
+                            <div className="p-1.5 rounded-xl" style={{ background: stsp.bgColor }}>
+                              <span className="block text-[9px] font-medium" style={{ color: stsp.textColor }}>TSP</span>
+                              <span className="text-xs font-semibold" style={{ color: stsp.textColor }}>{r.tsp}</span>
+                            </div>
+                          </>);
+                        })()}
                         <div className="bg-[#fce8e6] p-1.5 rounded-xl">
                           <span className="block text-[9px] font-medium text-[#c5221f]">Temp</span>
                           <span className="text-xs font-semibold text-[#c5221f]">{r.temperature}°C</span>
