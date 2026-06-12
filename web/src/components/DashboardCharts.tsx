@@ -30,16 +30,15 @@ const RANGES: { value: Range; label: string }[] = [
   { value: '7d',  label: '7D'  },
 ];
 
+const TZ = 'Asia/Bangkok';
+
 function formatTick(ts: string, range: Range): string {
   const d = new Date(ts);
-  if (range === '1h' || range === '6h') {
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  if (range === '1h' || range === '6h' || range === '24h') {
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: TZ });
   }
-  if (range === '24h') {
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
-  return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' +
-         d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric', timeZone: TZ }) + ' ' +
+         d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: TZ });
 }
 
 function degToCompass(deg: number): string {

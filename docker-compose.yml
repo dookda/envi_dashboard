@@ -44,6 +44,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/air/api/stations > /dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   cron:
     image: alpine:3.19
@@ -51,7 +57,7 @@ services:
     restart: always
     depends_on:
       web:
-        condition: service_started
+        condition: service_healthy
     command: >
       sh -c "echo 'Cron started — syncing every 60s'; while true; do
         wget -qO- --header='Content-Type: application/json' --post-data='{}' http://web:3000/air/api/readings/sync && echo ' synced' || echo ' sync failed';
