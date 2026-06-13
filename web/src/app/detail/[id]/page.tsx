@@ -18,6 +18,7 @@ interface Reading {
   windSpeed: number;
   windDirection: number;
   temperature: number;
+  humidity: number;
   timestamp: string;
 }
 
@@ -168,10 +169,14 @@ export default function DetailPage({ params }: { params: Promise<{ id: string }>
               </div>
             </div>
             {/* Row 2: weather + alert button */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#fce8e6]">
                 <span className="w-2 h-2 rounded-full bg-[#ea4335]" />
                 <span className="text-[#c5221f]">{r.temperature}°C</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#e8f0fe]">
+                <span className="w-2 h-2 rounded-full bg-[#1a73e8]" />
+                <span className="text-[#1a73e8]">{r.humidity}%</span>
               </div>
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#e0f7fa]">
                 <span className="w-2 h-2 rounded-full bg-[#00acc1]" />

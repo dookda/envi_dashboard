@@ -26,6 +26,7 @@ const CODE_LABELS: Record<string, string> = {
   a01007: 'Wind Speed',
   a01008: 'Wind Direction',
   a01001: 'Temperature',
+  a01002: 'Humidity',
   a01006: 'Atm. Pressure',
 };
 
@@ -37,6 +38,7 @@ const CODE_UNITS: Record<string, string> = {
   a01007: 'km/h',
   a01008: '°',
   a01001: '°C',
+  a01002: '%',
   a01006: 'hPa',
 };
 

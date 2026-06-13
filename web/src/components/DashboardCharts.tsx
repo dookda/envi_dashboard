@@ -12,6 +12,7 @@ interface Reading {
   windSpeed: number;
   windDirection: number;
   temperature: number;
+  humidity: number;
   timestamp: string;
 }
 
@@ -178,8 +179,9 @@ export default function DashboardCharts({ readings, stationName, range, onRangeC
         {renderChart('pm10', 'PM10 Trend',  '#34a853', 'colorPm10',  'µg/m³')}
       </div>
       {/* Weather */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {renderChart('temperature',   'Temperature',    '#ea4335', 'colorTemp',  '°C')}
+        {renderChart('humidity',      'Humidity',       '#1a73e8', 'colorHum',   '%')}
         {renderChart('windSpeed',     'Wind Speed',     '#00bcd4', 'colorWind',  'm/s')}
         {renderChart('windDirection', 'Wind Direction', '#ff9800', 'colorWDir',  '°', degToCompass)}
       </div>

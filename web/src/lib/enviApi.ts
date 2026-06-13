@@ -12,6 +12,7 @@ export const CODE_MAP: Record<string, keyof EnviReading> = {
     a01007: 'windSpeed',
     a01008: 'windDirection',
     a01001: 'temperature',
+    a01002: 'humidity',
 };
 
 export interface EnviReading {
@@ -21,6 +22,7 @@ export interface EnviReading {
     windSpeed: number;
     windDirection: number;
     temperature: number;
+    humidity: number;
     timestamp: Date;
 }
 
@@ -106,6 +108,7 @@ export async function fetchStationReadings(
         windSpeed: partial.windSpeed ?? 0,
         windDirection: partial.windDirection ?? 0,
         temperature: partial.temperature ?? 30,
+        humidity: partial.humidity ?? 0,
         timestamp: partial.timestamp!,
     };
 }

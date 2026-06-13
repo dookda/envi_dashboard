@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
       windSpeed: number;
       windDirection: number;
       temperature: number;
+      humidity: number;
     }>>`
       SELECT
         date_trunc('hour', timestamp)                  AS hour,
@@ -52,7 +53,8 @@ export async function GET(request: NextRequest) {
         ROUND(AVG(tsp)::numeric, 1)                    AS tsp,
         ROUND(AVG("windSpeed")::numeric, 2)            AS "windSpeed",
         ROUND(AVG("windDirection")::numeric, 1)        AS "windDirection",
-        ROUND(AVG(temperature)::numeric, 1)            AS temperature
+        ROUND(AVG(temperature)::numeric, 1)            AS temperature,
+        ROUND(AVG(humidity)::numeric, 1)               AS humidity
       FROM "Reading"
       WHERE "stationId" = ${stationId}
         AND timestamp >= ${since}
@@ -69,6 +71,7 @@ export async function GET(request: NextRequest) {
       windSpeed: Number(r.windSpeed),
       windDirection: Number(r.windDirection),
       temperature: Number(r.temperature),
+      humidity: Number(r.humidity),
       timestamp: r.hour.toISOString(),
     }));
 

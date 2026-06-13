@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
                         windSpeed: reading.windSpeed,
                         windDirection: reading.windDirection,
                         temperature: reading.temperature,
+                        humidity: reading.humidity,
                         timestamp: reading.timestamp,
                     },
                 });

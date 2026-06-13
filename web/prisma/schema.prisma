@@ -30,6 +30,7 @@ model Reading {
   windSpeed     Float    @default(0)
   windDirection Float    @default(0)
   temperature   Float    @default(30)
+  humidity      Float    @default(0)
   timestamp     DateTime @default(now())
   createdAt     DateTime @default(now())
 

@@ -16,6 +16,7 @@ interface Reading {
   windSpeed: number;
   windDirection: number;
   temperature: number;
+  humidity: number;
   timestamp: string;
 }
 
@@ -159,37 +160,47 @@ export default function DashboardPage() {
                     </div>
 
                     {r ? (
-                      <div className="grid grid-cols-3 gap-1.5 text-center">
+                      <div className="flex flex-col gap-1.5 text-center">
+                        {/* AQ row */}
                         {(() => {
                           const s25  = getStatus(pm25Level(r.pm25));
                           const s10  = getStatus(pm10Level(r.pm10));
                           const stsp = getStatus(tspLevel(r.tsp));
-                          return (<>
-                            <div className="p-1.5 rounded-xl" style={{ background: s25.bgColor }}>
-                              <span className="block text-[9px] font-medium" style={{ color: s25.textColor }}>PM2.5</span>
-                              <span className="text-xs font-semibold" style={{ color: s25.textColor }}>{r.pm25}</span>
+                          return (
+                            <div className="grid grid-cols-3 gap-1.5">
+                              <div className="p-1.5 rounded-xl" style={{ background: s25.bgColor }}>
+                                <span className="block text-[9px] font-medium" style={{ color: s25.textColor }}>PM2.5</span>
+                                <span className="text-xs font-semibold" style={{ color: s25.textColor }}>{r.pm25}</span>
+                              </div>
+                              <div className="p-1.5 rounded-xl" style={{ background: s10.bgColor }}>
+                                <span className="block text-[9px] font-medium" style={{ color: s10.textColor }}>PM10</span>
+                                <span className="text-xs font-semibold" style={{ color: s10.textColor }}>{r.pm10}</span>
+                              </div>
+                              <div className="p-1.5 rounded-xl" style={{ background: stsp.bgColor }}>
+                                <span className="block text-[9px] font-medium" style={{ color: stsp.textColor }}>TSP</span>
+                                <span className="text-xs font-semibold" style={{ color: stsp.textColor }}>{r.tsp}</span>
+                              </div>
                             </div>
-                            <div className="p-1.5 rounded-xl" style={{ background: s10.bgColor }}>
-                              <span className="block text-[9px] font-medium" style={{ color: s10.textColor }}>PM10</span>
-                              <span className="text-xs font-semibold" style={{ color: s10.textColor }}>{r.pm10}</span>
-                            </div>
-                            <div className="p-1.5 rounded-xl" style={{ background: stsp.bgColor }}>
-                              <span className="block text-[9px] font-medium" style={{ color: stsp.textColor }}>TSP</span>
-                              <span className="text-xs font-semibold" style={{ color: stsp.textColor }}>{r.tsp}</span>
-                            </div>
-                          </>);
+                          );
                         })()}
-                        <div className="bg-[#fce8e6] p-1.5 rounded-xl">
-                          <span className="block text-[9px] font-medium text-[#c5221f]">Temp</span>
-                          <span className="text-xs font-semibold text-[#c5221f]">{r.temperature}°C</span>
-                        </div>
-                        <div className="bg-[#e0f7fa] p-1.5 rounded-xl">
-                          <span className="block text-[9px] font-medium text-[#00838f]">Wind</span>
-                          <span className="text-xs font-semibold text-[#00838f]">{r.windSpeed} m/s</span>
-                        </div>
-                        <div className="bg-[#fff3e0] p-1.5 rounded-xl">
-                          <span className="block text-[9px] font-medium text-[#e65100]">Dir</span>
-                          <span className="text-xs font-semibold text-[#e65100]">{degToCompass(r.windDirection)}</span>
+                        {/* Weather row */}
+                        <div className="grid grid-cols-4 gap-1.5">
+                          <div className="bg-[#fce8e6] p-1.5 rounded-xl">
+                            <span className="block text-[9px] font-medium text-[#c5221f]">Temp</span>
+                            <span className="text-xs font-semibold text-[#c5221f]">{r.temperature}°C</span>
+                          </div>
+                          <div className="bg-[#e8f0fe] p-1.5 rounded-xl">
+                            <span className="block text-[9px] font-medium text-[#1a73e8]">Hum</span>
+                            <span className="text-xs font-semibold text-[#1a73e8]">{r.humidity}%</span>
+                          </div>
+                          <div className="bg-[#e0f7fa] p-1.5 rounded-xl">
+                            <span className="block text-[9px] font-medium text-[#00838f]">Wind</span>
+                            <span className="text-xs font-semibold text-[#00838f]">{r.windSpeed} m/s</span>
+                          </div>
+                          <div className="bg-[#fff3e0] p-1.5 rounded-xl">
+                            <span className="block text-[9px] font-medium text-[#e65100]">Dir</span>
+                            <span className="text-xs font-semibold text-[#e65100]">{degToCompass(r.windDirection)}</span>
+                          </div>
                         </div>
                       </div>
                     ) : (

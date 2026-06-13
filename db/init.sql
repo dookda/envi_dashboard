@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS "Reading" (
     "windSpeed"     DOUBLE PRECISION  NOT NULL DEFAULT 0,
     "windDirection" DOUBLE PRECISION  NOT NULL DEFAULT 0,
     "temperature"   DOUBLE PRECISION  NOT NULL DEFAULT 30,
+    "humidity"      DOUBLE PRECISION  NOT NULL DEFAULT 0,
     "timestamp"     TIMESTAMPTZ       NOT NULL DEFAULT NOW(),
     "createdAt"     TIMESTAMPTZ       NOT NULL DEFAULT NOW()
 );
