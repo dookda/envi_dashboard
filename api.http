@@ -17,9 +17,9 @@
 @appkey    = 02a6c51343ed4552ad59e81161d20840
 
 # ── Regenerate these three values when requests return 401/403 ──
-@timestamp = 1781223343008
-@rand      = LKVSYZHFFN
-@signature = 8EA52ABCE253DFF6E5F0E2FF1B0204EB36347C5D
+@timestamp = 1781314748825
+@rand      = L94Q0A280B
+@signature = 2A1286DF663D7B344B2EF15808E44F83CECBFE1D
 
 ###
 # ─────────────────────────────────────────────────────────

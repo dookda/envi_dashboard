@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft, Send, Users, BellRing, RefreshCw, CheckCircle2,
-  AlertCircle, Trash2, MessageCircle, SlidersHorizontal, Save,
+  AlertCircle, Trash2, MessageCircle, SlidersHorizontal, Save, Bug,
 } from 'lucide-react';
 
 interface Subscriber {
@@ -142,6 +142,13 @@ export default function AdminPage() {
             <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6]">LINE messaging control</p>
           </div>
         </div>
+        <Link
+          href="/debug"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#fce8e6] text-[#c5221f] text-xs font-medium hover:bg-[#f5c6c6] transition-colors"
+        >
+          <Bug className="h-3.5 w-3.5" />
+          API Debug
+        </Link>
       </header>
 
       {/* LINE Quota */}
