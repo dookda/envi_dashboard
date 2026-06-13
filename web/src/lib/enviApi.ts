@@ -6,12 +6,12 @@ const APP_SECRET = process.env.APP_SECRET!;
 
 // HJ 212-2017 standard factor code → Reading model field mapping
 export const CODE_MAP: Record<string, keyof EnviReading> = {
-    a34002: 'pm25',
-    a34004: 'pm10',
+    a34004: 'pm25',
+    a34002: 'pm10',
     a34001: 'tsp',
-    a01001: 'windSpeed',
-    a01002: 'windDirection',
-    a01003: 'temperature',
+    a01007: 'windSpeed',
+    a01008: 'windDirection',
+    a01001: 'temperature',
 };
 
 export interface EnviReading {

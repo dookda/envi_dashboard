@@ -20,27 +20,24 @@ function buildHeaders() {
 
 // Human-readable labels for known HJ212-2017 codes
 const CODE_LABELS: Record<string, string> = {
+  a34004: 'PM2.5',
+  a34002: 'PM10',
   a34001: 'TSP',
-  a34002: 'PM2.5',
-  a34004: 'PM10',
-  a01001: 'Wind Speed',
-  a01002: 'Wind Direction',
-  a01003: 'Temperature (a01003)',
+  a01007: 'Wind Speed',
+  a01008: 'Wind Direction',
+  a01001: 'Temperature',
   a01006: 'Atm. Pressure',
-  a01007: 'Rainfall',
-  a01008: 'Temperature',
 };
 
 // Units for known codes
 const CODE_UNITS: Record<string, string> = {
-  a34001: 'µg/m³',
-  a34002: 'µg/m³',
   a34004: 'µg/m³',
-  a01001: 'km/h',
-  a01002: '°',
+  a34002: 'µg/m³',
+  a34001: 'µg/m³',
+  a01007: 'km/h',
+  a01008: '°',
+  a01001: '°C',
   a01006: 'hPa',
-  a01007: 'mm',
-  a01008: '°C',
 };
 
 export async function GET() {
