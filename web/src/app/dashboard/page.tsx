@@ -212,7 +212,7 @@ export default function DashboardPage() {
 
                     {r && (
                       <p className="text-[10px] text-[#9aa0a6] text-right">
-                        {new Date(r.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        {new Date(r.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' })}
                       </p>
                     )}
                   </Link>

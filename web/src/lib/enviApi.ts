@@ -78,8 +78,11 @@ export async function fetchStationReadings(
     if (!body?.Data?.length) return null;
 
     // Merge all returned codes into a partial reading
+    // body.Time has no UTC offset (e.g. "2026-06-23T13:33:00") and represents
+    // Bangkok local time — anchor it explicitly so parsing doesn't depend on
+    // the runtime's system timezone (Docker containers default to UTC).
     const partial: Partial<Record<Exclude<keyof EnviReading, 'timestamp'>, number>> & { timestamp?: Date } = {
-        timestamp: body.Time ? new Date(body.Time) : new Date(),
+        timestamp: body.Time ? new Date(`${body.Time}+07:00`) : new Date(),
     };
 
     for (const item of body.Data) {
